@@ -434,12 +434,220 @@
   .t-ring-mid::before{top:-4.5px;left:50%;transform:translateX(-50%);}
   .t-ring-mid::after{bottom:-4.5px;left:50%;transform:translateX(-50%);}
 
-  /* ROBOT */
-  .robot{
-    position:relative;width:220px;height:320px;
-    animation:bob 4s ease-in-out infinite;
+  /* ============ AI IMAGE FRAME ============ */
+  .ai-frame{
+    position:relative;width:340px;height:340px;
+    display:grid;place-items:center;
+    animation:aiFloat 5s ease-in-out infinite;
   }
-  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  @keyframes aiFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+  .ai-img-wrap{
+    position:relative;
+    width:300px;height:300px;
+    border-radius:50%;
+    overflow:hidden;
+    border:3px solid var(--green);
+    box-shadow:
+      0 0 30px var(--green-glow),
+      0 0 60px rgba(15,255,122,.35),
+      0 0 100px rgba(15,255,122,.2),
+      inset 0 0 30px rgba(15,255,122,.18);
+    background:#000;
+    animation:aiBorderPulse 2.4s ease-in-out infinite;
+    z-index:5;
+  }
+  @keyframes aiBorderPulse{
+    0%,100%{
+      box-shadow:0 0 30px var(--green-glow),0 0 60px rgba(15,255,122,.35),0 0 100px rgba(15,255,122,.2),inset 0 0 30px rgba(15,255,122,.18);
+    }
+    50%{
+      box-shadow:0 0 45px var(--green),0 0 90px rgba(15,255,122,.55),0 0 140px rgba(15,255,122,.35),inset 0 0 40px rgba(15,255,122,.28);
+    }
+  }
+
+  .ai-img{
+    width:100%;height:100%;object-fit:cover;
+    display:block;
+    animation:aiBreath 4s ease-in-out infinite;
+    filter:contrast(1.05) saturate(1.15) brightness(1.05);
+  }
+  @keyframes aiBreath{
+    0%,100%{transform:scale(1) translateY(0);filter:contrast(1.05) saturate(1.15) brightness(1.05);}
+    50%{transform:scale(1.04) translateY(-2px);filter:contrast(1.1) saturate(1.25) brightness(1.12);}
+  }
+
+  /* fallback if image is missing */
+  .ai-fallback{
+    position:absolute;inset:0;
+    place-items:center;
+    font-family:'Orbitron',sans-serif;font-weight:900;
+    font-size:120px;color:var(--green);
+    background:radial-gradient(circle, rgba(15,255,122,.1), #000 70%);
+    text-shadow:0 0 30px var(--green),0 0 60px var(--green);
+  }
+
+  /* horizontal scan bar across the face */
+  .ai-scan-h{
+    position:absolute;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,#fff,var(--green),#fff,transparent);
+    box-shadow:0 0 12px var(--green),0 0 24px var(--green);
+    animation:aiScanV 2.2s ease-in-out infinite;
+    z-index:6;mix-blend-mode:screen;
+  }
+  @keyframes aiScanV{
+    0%,100%{top:8%;opacity:.9;}
+    50%{top:92%;opacity:.9;}
+  }
+
+  /* faint scan-grid overlay */
+  .ai-grid-overlay{
+    position:absolute;inset:0;pointer-events:none;z-index:7;
+    background:
+      repeating-linear-gradient(0deg,rgba(15,255,122,.06) 0px,rgba(15,255,122,.06) 1px,transparent 1px,transparent 4px);
+    mix-blend-mode:screen;opacity:.6;
+  }
+
+  /* subtle green tint */
+  .ai-tint{
+    position:absolute;inset:0;pointer-events:none;z-index:8;
+    background:radial-gradient(circle, transparent 30%, rgba(15,255,122,.18) 100%);
+    mix-blend-mode:screen;
+  }
+
+  /* noise/glitch overlay */
+  .ai-noise{
+    position:absolute;inset:0;pointer-events:none;z-index:9;
+    width:100%;height:100%;
+    opacity:.25;mix-blend-mode:screen;
+    animation:noiseShift .2s steps(3) infinite;
+  }
+  @keyframes noiseShift{
+    0%{transform:translate(0,0);}
+    33%{transform:translate(-1px,1px);}
+    66%{transform:translate(1px,-1px);}
+    100%{transform:translate(0,0);}
+  }
+
+  /* AURAS — multiple layered glows */
+  .ai-aura{position:absolute;border-radius:50%;pointer-events:none;}
+  .ai-aura-1{
+    inset:-12px;
+    background:radial-gradient(circle, rgba(15,255,122,.4) 30%, transparent 70%);
+    filter:blur(20px);opacity:.7;
+    animation:auraPulse 2s ease-in-out infinite;
+    z-index:1;
+  }
+  .ai-aura-2{
+    inset:-30px;
+    background:radial-gradient(circle, rgba(15,255,122,.25) 30%, transparent 70%);
+    filter:blur(28px);opacity:.5;
+    animation:auraPulse 3s ease-in-out infinite reverse;
+    z-index:0;
+  }
+  .ai-aura-3{
+    inset:-50px;
+    background:radial-gradient(circle, rgba(15,255,122,.15) 30%, transparent 70%);
+    filter:blur(40px);opacity:.4;
+    animation:auraPulse 4s ease-in-out infinite;
+    z-index:0;
+  }
+  @keyframes auraPulse{
+    0%,100%{opacity:.4;transform:scale(1);}
+    50%{opacity:.85;transform:scale(1.08);}
+  }
+
+  /* ORBITS — small spheres circling the image */
+  .ai-orbit{
+    position:absolute;inset:-20px;border-radius:50%;
+    animation:spin 12s linear infinite;
+    z-index:4;pointer-events:none;
+  }
+  .ai-orbit-2{
+    inset:-40px;
+    animation:spin 18s linear infinite reverse;
+  }
+  .ai-orbit .orb{
+    position:absolute;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 12px var(--green),0 0 24px var(--green),0 0 36px rgba(15,255,122,.5);
+  }
+  .ai-orbit .orb:nth-child(1){top:-7px;left:50%;transform:translateX(-50%);}
+  .ai-orbit .orb:nth-child(2){bottom:-7px;left:50%;transform:translateX(-50%);}
+  .ai-orbit .orb:nth-child(3){left:-7px;top:50%;transform:translateY(-50%);}
+  .ai-orbit .orb:nth-child(4){right:-7px;top:50%;transform:translateY(-50%);}
+  .ai-orbit-2 .orb{width:10px;height:10px;background:#fff;box-shadow:0 0 10px #fff,0 0 20px var(--green);}
+  .ai-orbit-2 .orb:nth-child(1){top:50%;left:0;transform:translate(-50%,-50%) rotate(60deg) translateY(-50%);}
+  .ai-orbit-2 .orb:nth-child(2){top:0;left:50%;transform:translate(-50%,-50%) rotate(180deg) translateY(-50%);}
+  .ai-orbit-2 .orb:nth-child(3){top:100%;left:50%;transform:translate(-50%,-50%) rotate(300deg) translateY(-50%);}
+
+  /* PARTICLES emerging from the image */
+  .ai-particles{
+    position:absolute;inset:0;pointer-events:none;z-index:3;
+  }
+  .ai-particles span{
+    position:absolute;
+    width:6px;height:6px;border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 8px var(--green),0 0 16px var(--green);
+    opacity:0;
+    animation:particleRise 3s ease-out infinite;
+  }
+
+  @keyframes particleRise{
+    0%{opacity:0;transform:translate(var(--sx,0),0) scale(0);}
+    10%{opacity:1;transform:translate(var(--sx,0),0) scale(1);}
+    100%{opacity:0;transform:translate(var(--tx,0),var(--ty,-120px)) scale(.3);}
+  }
+
+  /* BURST on decide */
+  .ai-burst{
+    position:absolute;inset:-30px;border-radius:50%;
+    pointer-events:none;opacity:0;
+    background:radial-gradient(circle, rgba(255,255,255,.6) 0%, rgba(15,255,122,.4) 30%, transparent 70%);
+    z-index:2;
+  }
+
+  /* === DECIDE STATE === */
+  .ai-frame[data-state="decide"] .ai-img-wrap{
+    border-color:#fff;
+    animation:aiDecideBorder 1.2s ease-out forwards;
+  }
+  .ai-frame[data-state="decide"] .ai-img{
+    animation:aiDecideImg 1.2s ease-out forwards;
+  }
+  .ai-frame[data-state="decide"] .ai-burst{
+    animation:aiBurst 1.4s ease-out;
+  }
+  .ai-frame[data-state="decide"] .ai-aura-1,
+  .ai-frame[data-state="decide"] .ai-aura-2,
+  .ai-frame[data-state="decide"] .ai-aura-3{
+    animation:auraExpand 1.4s ease-out forwards;
+  }
+  @keyframes aiDecideBorder{
+    0%{box-shadow:0 0 30px var(--green-glow);}
+    30%{box-shadow:0 0 80px #fff, 0 0 160px var(--green);}
+    100%{box-shadow:0 0 60px #fff, 0 0 120px var(--green), inset 0 0 50px rgba(15,255,122,.3);}
+  }
+  @keyframes aiDecideImg{
+    0%{transform:scale(1);filter:brightness(1.05);}
+    30%{transform:scale(1.15);filter:brightness(1.8) contrast(1.3) saturate(1.5);}
+    100%{transform:scale(1.06);filter:brightness(1.25) contrast(1.15) saturate(1.3);}
+  }
+  @keyframes aiBurst{
+    0%{opacity:0;transform:scale(.5);}
+    20%{opacity:1;transform:scale(1.2);}
+    100%{opacity:0;transform:scale(2.5);}
+  }
+  @keyframes auraExpand{
+    0%{opacity:.5;transform:scale(1);}
+    50%{opacity:1;transform:scale(1.5);}
+    100%{opacity:.6;transform:scale(1.2);}
+  }
+
+  /* legacy robot CSS kept for fallback (hidden — image is used instead) */
+  .robot{display:none;}
 
   .halo{
     position:absolute;top:-26px;left:50%;transform:translateX(-50%);
@@ -801,43 +1009,37 @@
         <div class="t-ring t-ring-outer"></div>
         <div class="t-ring t-ring-mid"></div>
 
-        <div class="robot" id="robot" data-state="think">
-          <div class="halo"></div>
-          <div class="head">
-            <div class="ear l"></div>
-            <div class="ear r"></div>
-            <div class="visor">
-              <div class="eyes">
-                <div class="eye"></div>
-                <div class="eye r"></div>
-              </div>
-              <div class="scan-eye"></div>
-              <div class="happy-eye">
-                <div class="arc"></div>
-                <div class="arc"></div>
-              </div>
-            </div>
-            <div class="chin"></div>
+        <div class="ai-frame" id="aiFrame" data-state="think">
+          <div class="ai-aura ai-aura-1"></div>
+          <div class="ai-aura ai-aura-2"></div>
+          <div class="ai-aura ai-aura-3"></div>
+
+          <div class="ai-img-wrap">
+            <img src="/ai-thinking.png" class="ai-img" id="aiImg" alt="AI" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
+            <div class="ai-fallback" style="display:none">AI</div>
+            <div class="ai-scan-h"></div>
+            <div class="ai-grid-overlay"></div>
+            <div class="ai-tint"></div>
+            <svg class="ai-noise" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <filter id="noiseF"><feTurbulence baseFrequency="0.9" /></filter>
+              <rect width="100%" height="100%" filter="url(#noiseF)" opacity="0.1"/>
+            </svg>
           </div>
-          <div class="neck"></div>
-          <div class="arm left"></div>
-          <div class="arm right"></div>
-          <div class="r-body">
-            <div class="sensor s1"></div>
-            <div class="sensor s2"></div>
-            <div class="sensor s3"></div>
-            <div class="sensor s4"></div>
-            <div class="core"></div>
-            <div class="bars">
-              <div class="bar b1"></div>
-              <div class="bar b2"></div>
-              <div class="bar b3"></div>
-            </div>
+
+          <div class="ai-orbit">
+            <span class="orb"></span>
+            <span class="orb"></span>
+            <span class="orb"></span>
+            <span class="orb"></span>
           </div>
-          <div class="base">
-            <div class="base-disk"></div>
-            <div class="base-ring"></div>
+          <div class="ai-orbit ai-orbit-2">
+            <span class="orb"></span>
+            <span class="orb"></span>
+            <span class="orb"></span>
           </div>
+
+          <div class="ai-particles" id="aiParticles"></div>
+          <div class="ai-burst"></div>
         </div>
       </div>
     </div>
@@ -925,9 +1127,27 @@
     }
   }
 
+  // Build particle elements once
+  (function buildParticles(){
+    const container = document.getElementById('aiParticles');
+    if (!container) return;
+    const N = 14;
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('span');
+      const angle = (i / N) * Math.PI * 2 + Math.random() * 0.5;
+      const dist = 80 + Math.random() * 80;
+      s.style.left = `${50 + (Math.cos(angle) * 8)}%`;
+      s.style.top = `${50 + (Math.sin(angle) * 8)}%`;
+      s.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+      s.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+      s.style.animationDelay = `${(Math.random() * 3).toFixed(2)}s`;
+      container.appendChild(s);
+    }
+  })();
+
   function startThinkingAnimation(){
-    const robot = document.getElementById('robot');
-    robot.setAttribute('data-state', 'think');
+    const frame = document.getElementById('aiFrame');
+    if (frame) frame.setAttribute('data-state', 'think');
     statusIdx = 0;
     document.getElementById('statusText').textContent = STATUSES[0];
     clearInterval(statusTimer);
@@ -944,8 +1164,8 @@
   }
 
   function flashDecide(){
-    const robot = document.getElementById('robot');
-    robot.setAttribute('data-state', 'decide');
+    const frame = document.getElementById('aiFrame');
+    if (frame) frame.setAttribute('data-state', 'decide');
     document.getElementById('statusText').textContent = 'DECISION REACHED';
   }
 
