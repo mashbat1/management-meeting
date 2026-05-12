@@ -4,7 +4,7 @@ const QRCode = require('qrcode');
 
 const state = require('../lib/state');
 const { isMostlyLatin, transliterate } = require('../lib/transliterate');
-const { buildPrompts, callOpenRouter, parseSelection, MODEL } = require('../lib/openrouter');
+const { buildPrompts, callOpenRouter, parseSelection, cleanQuestionWithAI, MODEL } = require('../lib/openrouter');
 
 const app = express();
 app.use(express.json({ limit: '256kb' }));
@@ -50,6 +50,20 @@ app.get('/api/qr', async (req, res) => {
 });
 
 // ============ Submit a question ============
+async function cleanQuestionSafely(raw) {
+  // Prefer AI cleaning (handles transliteration + grammar correctly).
+  // Fall back to simple letter-by-letter transliteration if AI fails.
+  try {
+    if (process.env.OPENROUTER_API_KEY) {
+      const cleaned = await cleanQuestionWithAI(raw);
+      if (cleaned && cleaned.trim()) return cleaned.trim();
+    }
+  } catch (err) {
+    console.warn('AI clean failed, falling back to transliteration:', err.message);
+  }
+  return isMostlyLatin(raw) ? transliterate(raw) : raw;
+}
+
 app.post('/api/questions', async (req, res) => {
   try {
     const { name, question, source } = req.body || {};
@@ -61,8 +75,10 @@ app.post('/api/questions', async (req, res) => {
     }
     const rawQuestion = question.trim();
     const rawName = (name && String(name).trim().slice(0, 80)) || 'Нэргүй';
-    const wasLatin = isMostlyLatin(rawQuestion);
-    const finalQuestion = wasLatin ? transliterate(rawQuestion) : rawQuestion;
+
+    // AI translates/cleans the question to proper Mongolian (handles 'cinii ner hen be' → 'Чиний нэр хэн бэ?')
+    const finalQuestion = await cleanQuestionSafely(rawQuestion);
+    // Names are usually short and ambiguous — keep simple transliteration for them
     const finalName = isMostlyLatin(rawName) ? transliterate(rawName) : rawName;
 
     const meta = await state.getMeta();
@@ -72,12 +88,12 @@ app.post('/api/questions', async (req, res) => {
       round: meta.currentRound || 1,
       name: finalName,
       question: finalQuestion,
-      originalLatin: wasLatin ? rawQuestion : null,
+      originalRaw: rawQuestion !== finalQuestion ? rawQuestion : null,
       source: source === 'manual' ? 'manual' : 'qr',
       createdAt: new Date().toISOString(),
     };
     await state.addQuestion(entry);
-    res.json({ ok: true, id: entry.id, transliterated: wasLatin });
+    res.json({ ok: true, id: entry.id, finalQuestion });
   } catch (err) {
     console.error('POST /api/questions error:', err);
     res.status(500).json({ error: err.message });
