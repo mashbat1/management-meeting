@@ -159,7 +159,7 @@ app.post('/api/reset', async (req, res) => {
 });
 
 // ============ AI select (Top 3) ============
-const MIN_THINKING_MS = 5500; // 5.5 секундын турш display дээр AI робот харагдана
+const MIN_THINKING_MS = 10500; // 10 секундын турш display дээр AI thinking харагдана
 
 app.post('/api/select', async (req, res) => {
   try {
