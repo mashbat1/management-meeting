@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <title>Хурлын Дэлгэц</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 60px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 52px;
+      margin: 0;
+      background: linear-gradient(135deg, #38bdf8, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .header .sub {
+      color: #94a3b8;
+      font-size: 22px;
+      margin-top: 12px;
+    }
+    .round-badge {
+      display: inline-block;
+      margin-top: 14px;
+      background: rgba(167, 139, 250, 0.2);
+      color: #c4b5fd;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* === QR COLLECTION VIEW === */
+    .qr-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      padding: 20px 0 60px;
+    }
+    .qr-frame {
+      background: white;
+      padding: 28px;
+      border-radius: 28px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 4px rgba(167, 139, 250, 0.3);
+    }
+    .qr-frame img {
+      display: block;
+      width: 460px;
+      height: 460px;
+      max-width: 70vh;
+      max-height: 70vh;
+    }
+    .qr-instructions {
+      text-align: center;
+      max-width: 700px;
+    }
+    .qr-instructions .big {
+      font-size: 36px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 14px;
+    }
+    .qr-instructions .small {
+      font-size: 18px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .qr-stats {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 10px 20px;
+      border-radius: 14px;
+      font-size: 18px;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+    .qr-stats .pulse {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 12px #4ade80;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.3} }
+
+    /* === TOP 3 VIEW === */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 30px;
+      max-width: 1700px;
+      margin: 0 auto;
+    }
+    @media (max-width: 1400px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 36px; }
+      .qr-frame img { width: 320px; height: 320px; }
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 22px;
+      padding: 32px;
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #a78bfa);
+      color: white;
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
+    }
+    .author {
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+    .q-text {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.45;
+      margin-bottom: 22px;
+      color: #f1f5f9;
+    }
+    .reason {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 18px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      border-left: 4px solid #a78bfa;
+    }
+    .reason b { color: #a78bfa; }
+    .badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="header" id="headerBox">
+    <h1 id="title">Асуултаа илгээнэ үү</h1>
+    <div class="sub" id="subText">Утсаараа QR кодыг скан хийнэ үү</div>
+    <div class="round-badge">Илтгэл #<span id="roundNum">1</span></div>
+  </div>
+  <div id="content"></div>
+
+  <script>
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    let qrDataUrl = null;
+    let cachedCount = 0;
+
+    async function ensureQR() {
+      if (!qrDataUrl) {
+        const r = await fetch('/api/qr');
+        const j = await r.json();
+        qrDataUrl = j.qr;
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const r = await fetch('/api/questions');
+        const j = await r.json();
+        cachedCount = j.currentRoundCount || 0;
+      } catch (e) {}
+    }
+
+    function renderQRView(round) {
+      return `<div class="qr-view">
+        <div class="qr-frame"><img src="${qrDataUrl}" alt="QR Code" /></div>
+        <div class="qr-instructions">
+          <div class="big">Утсаараа QR кодыг скан хийнэ үү</div>
+          <div class="small">Илтгэгчдэд асуултаа бичээд илгээнэ үү</div>
+        </div>
+        <div class="qr-stats">
+          <span class="pulse"></span>
+          <span><span id="cntInline">${cachedCount}</span> асуулт ирлээ</span>
+        </div>
+      </div>`;
+    }
+
+    function renderTop2View(topTwo) {
+      return `<div class="grid">` + topTwo.items.map((it, i) => {
+        const display = it.displayQuestion || it.question;
+        return `
+        <div class="card">
+          <div class="badge">#${it.id}</div>
+          <div class="rank">${i+1}</div>
+          <div class="author">${escapeHtml(it.name)}</div>
+          <div class="q-text">${escapeHtml(display)}</div>
+          <div class="reason"><b>Яагаад чухал:</b> ${escapeHtml(it.reason)}</div>
+        </div>`;
+      }).join('') + `</div>`;
+    }
+
+    async function load() {
+      await ensureQR();
+      await loadStats();
+      const r = await fetch('/api/top2');
+      const j = await r.json();
+      const content = document.getElementById('content');
+      const title = document.getElementById('title');
+      const sub = document.getElementById('subText');
+      const roundNum = document.getElementById('roundNum');
+
+      const round = j.topTwo ? (j.topTwo.round || 1) : (j.currentRound || 1);
+      roundNum.textContent = round;
+
+      const header = document.getElementById('headerBox');
+      if (!j.topTwo) {
+        title.textContent = 'Асуултаа илгээнэ үү';
+        sub.textContent = 'Утсаараа QR кодыг скан хийнэ үү';
+        title.style.display = '';
+        sub.style.display = '';
+        header.style.marginBottom = '';
+        content.innerHTML = renderQRView(round);
+      } else {
+        title.style.display = 'none';
+        sub.style.display = 'none';
+        header.style.marginBottom = '20px';
+        content.innerHTML = renderTop2View(j.topTwo);
+      }
+    }
+
+    load();
+    setInterval(load, 3000);
+  </script>
+</body>
+</html>

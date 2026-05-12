@@ -1,0 +1,20 @@
+{
+  "name": "management-meeting",
+  "version": "1.0.0",
+  "description": "QR-based meeting Q&A collector with AI Top 3 selection (Vercel + Upstash Redis)",
+  "private": true,
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "qrcode": "^1.5.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <title>Хурлын Admin - QR Асуултууд</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #334155;
+      --accent: #38bdf8;
+      --accent-2: #a78bfa;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 18px 32px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+    header .sub { color: var(--muted); font-size: 13px; }
+    .round-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(167, 139, 250, 0.3);
+    }
+    .round-badge .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.4} }
+
+    .btn-open-display {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+    }
+    .btn-open-display:hover { transform: translateY(-1px); }
+
+    .topic-input {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: rgba(167, 139, 250, 0.08);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      border-radius: 10px;
+    }
+    .topic-input label {
+      display: block;
+      font-size: 12px;
+      color: var(--accent-2);
+      margin-bottom: 6px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .topic-input input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    .topic-input input:focus { border-color: var(--accent-2); }
+    .topic-status {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      min-height: 14px;
+    }
+    .topic-status.saved { color: var(--good); }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px 32px;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* === Collection view === */
+    .collect-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 980px) {
+      .collect-grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #334155;
+    }
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 0.3px;
+    }
+    .qr-box {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-box img { width: 100%; height: auto; display: block; }
+    .qr-url {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      color: var(--accent);
+      word-break: break-all;
+      text-align: center;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .stat {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat .n { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat .l { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-done-big {
+      width: 100%;
+      margin-top: 18px;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 800;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: white;
+      letter-spacing: 1px;
+      box-shadow: 0 10px 30px rgba(167, 139, 250, 0.25);
+    }
+    .btn-done-big:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(167, 139, 250, 0.4); }
+    .btn-done-big:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .small-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .small-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid #334155;
+    }
+    .small-actions button:hover { color: var(--text); border-color: var(--accent); }
+    .small-actions .btn-danger-mini { color: var(--bad); border-color: rgba(239, 68, 68, 0.3); }
+    .small-actions .btn-danger-mini:hover { background: rgba(239, 68, 68, 0.1); color: var(--bad); }
+
+    .manual-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 14px;
+      background: rgba(56, 189, 248, 0.06);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+    }
+    .manual-form input, .manual-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    .manual-form input:focus, .manual-form textarea:focus { border-color: var(--accent); }
+    .manual-form textarea { min-height: 60px; resize: vertical; }
+    .manual-form .row { display: flex; gap: 8px; align-items: center; }
+    .manual-form .row button {
+      flex: none;
+      padding: 10px 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+    .translit-preview {
+      font-size: 12px;
+      color: var(--accent-2);
+      padding: 6px 10px;
+      background: rgba(167, 139, 250, 0.08);
+      border-radius: 6px;
+      display: none;
+    }
+    .translit-preview.show { display: block; }
+    .translit-preview b { color: var(--text); }
+
+    .question-list {
+      max-height: 620px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .q-item {
+      background: #0f172a;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+    }
+    .q-item.manual { border-left-color: var(--good); }
+    .q-item .meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .q-item .text { line-height: 1.5; }
+    .q-item .original {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      opacity: 0.7;
+    }
+    .q-item .source-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      margin-left: 6px;
+      letter-spacing: 0.4px;
+    }
+    .q-item .source-tag.manual { background: rgba(34,197,94,0.18); color: #4ade80; }
+    .q-item .source-tag.translit { background: rgba(167, 139, 250, 0.18); color: var(--accent-2); }
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 40px 20px;
+      font-style: italic;
+    }
+    .round-group { margin-bottom: 14px; }
+    .round-group .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(167, 139, 250, 0.08);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--accent-2);
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .round-group .head .count {
+      background: rgba(167, 139, 250, 0.25);
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+    .round-group.collapsed .body { display: none; }
+    .round-group .head .chevron { transition: transform 0.2s; display: inline-block; }
+    .round-group.collapsed .head .chevron { transform: rotate(-90deg); }
+
+    /* === Selected view === */
+    .selected-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+    .selected-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .selected-header h2 {
+      font-size: 36px;
+      margin: 0 0 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2), #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+    .selected-header .sub { color: var(--muted); font-size: 16px; }
+    .top2-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      max-width: 1400px;
+      width: 100%;
+    }
+    @media (max-width: 1100px) {
+      .top2-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .top2-grid { grid-template-columns: 1fr; }
+    }
+    .top-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(167, 139, 250, 0.1));
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      border-radius: 18px;
+      padding: 28px;
+      position: relative;
+    }
+    .top-card .rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 20px rgba(167, 139, 250, 0.35);
+    }
+    .top-card .author { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    .top-card .q-text {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 18px;
+      color: #f1f5f9;
+    }
+    .top-card .reason {
+      background: rgba(0,0,0,0.25);
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      border-left: 3px solid var(--accent-2);
+    }
+    .top-card .reason b { color: var(--accent-2); }
+    .top-card .badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .selected-actions {
+      margin-top: 36px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      transform: translateY(120px);
+      transition: transform 0.3s;
+      z-index: 100;
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.ok { background: var(--good); color: white; }
+    .toast.err { background: var(--bad); color: white; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Admin · Хурлын Хяналт</h1>
+      <div class="sub">Зөвхөн зохион байгуулагчийн дэлгэц — оролцогчдод харагдахгүй</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span class="round-badge"><span class="dot"></span>Илтгэл #<span id="roundNum">1</span></span>
+      <button id="openDisplayBtn" class="btn-open-display">🖥 Үзүүлэх дэлгэц нээх</button>
+      <div class="sub" id="clock"></div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ============ COLLECTION VIEW ============ -->
+    <div id="viewCollect" class="view active">
+      <div class="collect-grid">
+        <div>
+          <div class="panel">
+            <h2>QR код урьдчилан харах</h2>
+            <div class="qr-box" id="qrBox">Уншиж байна...</div>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;font-style:italic;">
+              Оролцогчдод харуулахын тулд дээрх "🖥 Үзүүлэх дэлгэц нээх" товчийг ашигла
+            </div>
+            <div class="stats">
+              <div class="stat"><div class="n" id="qCountRound">0</div><div class="l">Энэ илтгэлд</div></div>
+              <div class="stat"><div class="n" id="qCount">0</div><div class="l">Нийт асуулт</div></div>
+            </div>
+
+            <div class="topic-input">
+              <label for="topicField">Энэ блокын сэдэв (AI-д контекст өгнө):</label>
+              <input id="topicField" type="text" maxlength="200"
+                placeholder="Жишээ: Стратеги, Технологи / Санхүү, Борлуулалт / Эрсдэл, Харилцагч" />
+              <div class="topic-status" id="topicStatus"></div>
+            </div>
+
+            <button class="btn-done-big" id="doneBtn">✓ ДУУСГАХ — AI-аар Top 3 сонгуулах</button>
+
+            <div class="small-actions">
+              <button id="refreshBtn">Шинэчлэх</button>
+              <button class="btn-danger-mini" id="resetBtn">Бүгдийг устгах</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <h2>Гар оруулга — өөрөө асуулт нэмэх</h2>
+            <div class="manual-form">
+              <input id="manualName" placeholder="Нэр (заавал биш)" maxlength="80" />
+              <textarea id="manualQ" placeholder="Латин эсвэл кирилл хэлбэрээр асуулт бичих... (Ctrl+Enter — илгээх)" maxlength="1000"></textarea>
+              <div class="translit-preview" id="translitPreview">Кирилл: <b id="translitText"></b></div>
+              <div class="row" style="justify-content:flex-end;">
+                <button id="manualSubmit">Нэмэх</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top: 16px;">
+            <h2>Цуглуулсан асуултууд</h2>
+            <div class="question-list" id="qList">
+              <div class="empty">Хараахан асуулт ирээгүй байна. QR кодыг скан хийнэ үү.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SELECTED VIEW ============ -->
+    <div id="viewSelected" class="view">
+      <div class="selected-wrap">
+        <div class="selected-header" style="margin-bottom: 18px;">
+          <div class="round-badge"><span class="dot"></span>Илтгэл #<span id="selRound">1</span></div>
+        </div>
+        <div class="top2-grid" id="top2Grid"></div>
+        <div class="selected-actions">
+          <button class="btn-done-big" id="doneNextBtn">✓ ДУУСГАХ — Дараагийн илтгэл рүү</button>
+          <div class="small-actions">
+            <button id="reselectBtn">↻ AI-аар дахин сонгуулах</button>
+            <button id="backCollectBtn">← Цуглуулга руу буцах</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ====== Helpers ====== */
+    function toast(msg, type='ok') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view' + name).classList.add('active');
+    }
+
+    /* ====== Latin → Cyrillic transliteration (preview) ====== */
+    const MULTI = [['shch','щ'],['sh','ш'],['ch','ч'],['ts','ц'],['kh','х'],['zh','ж'],
+      ['yo','ё'],['yu','ю'],['ya','я'],['ye','е'],['oe','ө'],['ue','ү'],
+      ['iin','ийн'],['iig','ийг'],['iih','ийх'],
+      ['uu','уу'],['oo','оо'],['aa','аа'],['ee','ээ'],['ii','ий'],
+      ['ai','ай'],['oi','ой'],['ei','эй'],['ui','уй']];
+    const SINGLE = {a:'а',b:'б',c:'ц',d:'д',e:'э',f:'ф',g:'г',h:'х',i:'и',j:'ж',
+      k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',q:'к',r:'р',s:'с',t:'т',u:'у',v:'в',
+      w:'в',x:'х',y:'й',z:'з',ö:'ө',ü:'ү'};
+    function isMostlyLatin(text) {
+      const letters = text.match(/[A-Za-zА-Яа-яЀ-ӿ]/g) || [];
+      if (letters.length === 0) return false;
+      const cyr = text.match(/[Ѐ-ӿ]/g) || [];
+      return cyr.length / letters.length < 0.3;
+    }
+    function transliterate(text) {
+      if (!isMostlyLatin(text)) return text;
+      let out = '', i = 0, lower = text.toLowerCase();
+      while (i < text.length) {
+        let matched = false;
+        for (const [lat, cyr] of MULTI) {
+          if (lower.startsWith(lat, i)) {
+            const up = text[i] !== text[i].toLowerCase();
+            out += up ? cyr[0].toUpperCase() + cyr.slice(1) : cyr;
+            i += lat.length; matched = true; break;
+          }
+        }
+        if (matched) continue;
+        const ch = text[i], lc = ch.toLowerCase();
+        if (SINGLE[lc]) {
+          out += (ch !== lc) ? SINGLE[lc].toUpperCase() : SINGLE[lc];
+        } else out += ch;
+        i++;
+      }
+      return out;
+    }
+
+    /* ====== State loaders ====== */
+    let lastTopTwo = null;
+    const collapsedRounds = new Set();
+
+    async function loadQR() {
+      const r = await fetch('/api/qr');
+      const j = await r.json();
+      document.getElementById('qrBox').innerHTML = `<img src="${j.qr}" alt="QR" />`;
+    }
+
+    async function loadQuestions() {
+      const r = await fetch('/api/questions');
+      const j = await r.json();
+      const currentRound = j.currentRound || 1;
+      document.getElementById('qCount').textContent = j.count;
+      document.getElementById('qCountRound').textContent = j.currentRoundCount || 0;
+      document.getElementById('roundNum').textContent = currentRound;
+      // Sync topic field (only if user isn't currently typing)
+      if (document.activeElement !== topicField) {
+        const serverTopic = j.currentTopic || '';
+        if (topicField.value !== serverTopic) {
+          topicField.value = serverTopic;
+          topicStatus.textContent = serverTopic ? '✓ Сэдэв хадгалагдсан' : '(сэдэв тохируулаагүй)';
+          topicStatus.classList.toggle('saved', !!serverTopic);
+        }
+      }
+
+      const list = document.getElementById('qList');
+      if (j.count === 0) {
+        list.innerHTML = '<div class="empty">Хараахан асуулт ирээгүй байна. QR кодыг скан хийнэ үү.</div>';
+        return;
+      }
+
+      const byRound = new Map();
+      j.questions.forEach((q) => {
+        const r = q.round || 1;
+        if (!byRound.has(r)) byRound.set(r, []);
+        byRound.get(r).push(q);
+      });
+      const rounds = [...byRound.keys()].sort((a, b) => b - a);
+
+      list.innerHTML = rounds.map((round) => {
+        const items = byRound.get(round);
+        const isCurrent = round === currentRound;
+        if (!isCurrent && !collapsedRounds.has(`expand-${round}`)) collapsedRounds.add(round);
+        const collapsedClass = collapsedRounds.has(round) ? 'collapsed' : '';
+        const itemsHtml = items.map((q) => {
+          const time = new Date(q.createdAt).toLocaleTimeString('mn-MN');
+          return `<div class="q-item">
+            <div class="meta"><span>#${q.id} · ${escapeHtml(q.name)}</span><span>${time}</span></div>
+            <div class="text">${escapeHtml(q.question)}</div>
+          </div>`;
+        }).join('');
+        return `<div class="round-group ${collapsedClass}" data-round="${round}">
+          <div class="head" onclick="toggleRound(${round})">
+            <span><span class="chevron">▼</span> Илтгэл #${round}${isCurrent ? ' · идэвхтэй' : ''}</span>
+            <span class="count">${items.length}</span>
+          </div>
+          <div class="body">${itemsHtml}</div>
+        </div>`;
+      }).join('');
+    }
+
+    window.toggleRound = function(round) {
+      if (collapsedRounds.has(round)) {
+        collapsedRounds.delete(round);
+        collapsedRounds.add(`expand-${round}`);
+      } else {
+        collapsedRounds.add(round);
+        collapsedRounds.delete(`expand-${round}`);
+      }
+      const el = document.querySelector(`.round-group[data-round="${round}"]`);
+      if (el) el.classList.toggle('collapsed');
+    };
+
+    async function loadTop2(opts={}) {
+      const r = await fetch('/api/top2');
+      const j = await r.json();
+      lastTopTwo = j.topTwo || null;
+      if (lastTopTwo) {
+        renderTop2(lastTopTwo);
+        if (opts.switchView) showView('Selected');
+      }
+      return lastTopTwo;
+    }
+
+    function renderTop2(topTwo) {
+      document.getElementById('selRound').textContent = topTwo.round || 1;
+      document.getElementById('top2Grid').innerHTML = topTwo.items.map((it, i) => {
+        const display = it.displayQuestion || it.question;
+        return `
+        <div class="top-card">
+          <div class="badge">#${it.id}</div>
+          <div class="rank">${i+1}</div>
+          <div class="author">${escapeHtml(it.name)}</div>
+          <div class="q-text">${escapeHtml(display)}</div>
+          <div class="reason"><b>Шалтгаан:</b> ${escapeHtml(it.reason)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    async function refreshCollect() {
+      await Promise.all([loadQuestions()]);
+    }
+
+    /* ====== Main "Done" — selection ====== */
+    async function runSelect() {
+      // Make sure topic is saved before running select
+      await saveTopic(true);
+      const btn = document.getElementById('doneBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span>AI боловсруулж байна...';
+      try {
+        const r = await fetch('/api/select', { method: 'POST' });
+        const j = await r.json();
+        if (j.ok) {
+          toast('Top 3 сонгогдлоо!', 'ok');
+          lastTopTwo = j.topTwo;
+          renderTop2(j.topTwo);
+          showView('Selected');
+        } else {
+          toast(j.error || 'Алдаа гарлаа', 'err');
+        }
+      } catch (err) {
+        toast('Алдаа: ' + err.message, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    }
+
+    /* ====== Topic save (debounced) ====== */
+    const topicField = document.getElementById('topicField');
+    const topicStatus = document.getElementById('topicStatus');
+    let topicTimer = null;
+    async function saveTopic(silent=false) {
+      const topic = topicField.value.trim();
+      try {
+        const r = await fetch('/api/topic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic }),
+        });
+        const j = await r.json();
+        if (j.ok) {
+          topicStatus.textContent = topic ? '✓ Сэдэв хадгалагдсан' : '(сэдэв тохируулаагүй)';
+          topicStatus.classList.toggle('saved', !!topic);
+        }
+      } catch (e) {
+        if (!silent) toast('Сэдэв хадгалахад алдаа', 'err');
+      }
+    }
+    topicField.addEventListener('input', () => {
+      clearTimeout(topicTimer);
+      topicStatus.textContent = '...';
+      topicStatus.classList.remove('saved');
+      topicTimer = setTimeout(() => saveTopic(true), 600);
+    });
+
+    /* ====== Selected view "Done" — next round ====== */
+    async function doneAndNext() {
+      const newTopic = prompt('Дараагийн илтгэлийн сэдэв (заавал биш):', '');
+      if (newTopic === null) return; // user cancelled
+      const btn = document.getElementById('doneNextBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span>Шилжиж байна...';
+      try {
+        const r = await fetch('/api/next-round', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: newTopic.trim() }),
+        });
+        const j = await r.json();
+        if (j.ok) {
+          toast(`Илтгэл #${j.currentRound} эхэллээ`, 'ok');
+          collapsedRounds.clear();
+          topicField.value = j.currentTopic || '';
+          topicStatus.textContent = j.currentTopic ? '✓ Сэдэв хадгалагдсан' : '(сэдэв тохируулаагүй)';
+          topicStatus.classList.toggle('saved', !!j.currentTopic);
+          await refreshCollect();
+          showView('Collect');
+        } else {
+          toast('Алдаа гарлаа', 'err');
+        }
+      } catch (err) {
+        toast('Алдаа: ' + err.message, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    }
+
+    /* ====== Event wiring ====== */
+    document.getElementById('openDisplayBtn').addEventListener('click', () => {
+      window.open('/display', 'meeting-display', 'width=1280,height=800');
+    });
+    document.getElementById('doneBtn').addEventListener('click', runSelect);
+    document.getElementById('doneNextBtn').addEventListener('click', doneAndNext);
+    document.getElementById('reselectBtn').addEventListener('click', runSelect);
+    document.getElementById('backCollectBtn').addEventListener('click', () => showView('Collect'));
+    document.getElementById('refreshBtn').addEventListener('click', refreshCollect);
+
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      if (!confirm('Бүх илтгэл, бүх асуултыг устгаж, Илтгэл #1-ээс шинээр эхлэх үү?\n(Архивлагдсаны дараа цэвэрлэнэ)')) return;
+      await fetch('/api/reset', { method: 'POST' });
+      toast('Цэвэрлэгдлээ', 'ok');
+      collapsedRounds.clear();
+      await refreshCollect();
+      showView('Collect');
+    });
+
+    /* ====== Manual entry with live transliteration preview ====== */
+    const manualQ = document.getElementById('manualQ');
+    const manualName = document.getElementById('manualName');
+    const translitPreview = document.getElementById('translitPreview');
+    const translitText = document.getElementById('translitText');
+    manualQ.addEventListener('input', () => {
+      const v = manualQ.value.trim();
+      if (v.length >= 3 && isMostlyLatin(v)) {
+        translitText.textContent = transliterate(v);
+        translitPreview.classList.add('show');
+      } else {
+        translitPreview.classList.remove('show');
+      }
+    });
+
+    async function submitManual() {
+      const question = manualQ.value.trim();
+      if (question.length < 3) {
+        toast('Асуулт хэт богино байна', 'err');
+        return;
+      }
+      const btn = document.getElementById('manualSubmit');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: manualName.value.trim() || 'Зохион байгуулагч',
+            question,
+            source: 'manual',
+          }),
+        });
+        const j = await r.json();
+        if (j.ok) {
+          toast('Асуулт нэмэгдлээ', 'ok');
+          manualQ.value = '';
+          manualName.value = '';
+          translitPreview.classList.remove('show');
+          await loadQuestions();
+        } else {
+          toast(j.error || 'Алдаа гарлаа', 'err');
+        }
+      } catch (err) {
+        toast('Алдаа: ' + err.message, 'err');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    document.getElementById('manualSubmit').addEventListener('click', submitManual);
+    manualQ.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitManual();
+    });
+
+    /* ====== Clock + autoload ====== */
+    function tick() {
+      document.getElementById('clock').textContent = new Date().toLocaleString('mn-MN');
+    }
+    setInterval(tick, 1000); tick();
+
+    loadQR();
+    refreshCollect();
+    loadTop2(); // restore selected view if there's already a topTwo (e.g. after page reload)
+    setInterval(loadQuestions, 3000);
+  </script>
+</body>
+</html>
