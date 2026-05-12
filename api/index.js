@@ -105,10 +105,14 @@ app.get('/api/questions', async (req, res) => {
 app.get('/api/top2', async (req, res) => {
   try {
     const meta = await state.getMeta();
+    const thinkingUntil = meta.thinkingUntil || 0;
+    const thinkingRemainingMs = Math.max(0, thinkingUntil - Date.now());
     res.json({
       topTwo: meta.topTwo || null,
       currentRound: meta.currentRound || 1,
       currentTopic: meta.currentTopic || '',
+      thinking: thinkingRemainingMs > 0,
+      thinkingRemainingMs,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -134,6 +138,7 @@ app.post('/api/next-round', async (req, res) => {
     const meta = await state.getMeta();
     meta.currentRound = (meta.currentRound || 1) + 1;
     meta.topTwo = null;
+    meta.thinkingUntil = 0;
     const newTopic = (req.body && typeof req.body.topic === 'string') ? req.body.topic.trim().slice(0, 200) : '';
     meta.currentTopic = newTopic;
     await state.setMeta(meta);
@@ -154,6 +159,8 @@ app.post('/api/reset', async (req, res) => {
 });
 
 // ============ AI select (Top 3) ============
+const MIN_THINKING_MS = 5500; // 5.5 секундын турш display дээр AI робот харагдана
+
 app.post('/api/select', async (req, res) => {
   try {
     if (!process.env.OPENROUTER_API_KEY) {
@@ -167,23 +174,24 @@ app.post('/api/select', async (req, res) => {
     if (roundQuestions.length === 0) {
       return res.status(400).json({ error: `Илтгэл #${currentRound}-д сонгох асуулт алга байна.` });
     }
+
+    // Mark thinking state immediately so /display can switch view
+    meta.thinkingUntil = Date.now() + MIN_THINKING_MS;
+    meta.topTwo = null;
+    await state.setMeta(meta);
+
+    let items;
     if (roundQuestions.length === 1) {
       const q = roundQuestions[0];
-      const topTwo = {
-        round: currentRound,
-        topic: currentTopic || null,
-        selectedAt: new Date().toISOString(),
-        items: [{ ...q, displayQuestion: q.question, reason: 'Зөвхөн нэг асуулт ирсэн тул шууд сонгогдов.' }],
-      };
-      meta.topTwo = topTwo;
-      await state.setMeta(meta);
-      return res.json({ ok: true, topTwo });
+      items = [{ ...q, displayQuestion: q.question, reason: 'Зөвхөн нэг асуулт ирсэн тул шууд сонгогдов.' }];
+    } else {
+      const { systemPrompt, userPrompt } = buildPrompts(roundQuestions, currentRound, currentTopic);
+      const { content } = await callOpenRouter({ systemPrompt, userPrompt });
+      items = parseSelection(content, roundQuestions);
     }
 
-    const { systemPrompt, userPrompt } = buildPrompts(roundQuestions, currentRound, currentTopic);
-    const { content } = await callOpenRouter({ systemPrompt, userPrompt });
-    const items = parseSelection(content, roundQuestions);
-
+    // Re-fetch meta in case other writes happened
+    const meta2 = await state.getMeta();
     const topTwo = {
       round: currentRound,
       topic: currentTopic || null,
@@ -191,11 +199,20 @@ app.post('/api/select', async (req, res) => {
       model: MODEL,
       items,
     };
-    meta.topTwo = topTwo;
-    await state.setMeta(meta);
-    res.json({ ok: true, topTwo });
+    meta2.topTwo = topTwo;
+    // Keep thinkingUntil — display will honor the 5.5s minimum
+    await state.setMeta(meta2);
+
+    const thinkingRemainingMs = Math.max(0, (meta2.thinkingUntil || 0) - Date.now());
+    res.json({ ok: true, topTwo, thinkingRemainingMs });
   } catch (err) {
     console.error('POST /api/select error:', err);
+    // Clear thinking flag on error
+    try {
+      const m = await state.getMeta();
+      m.thinkingUntil = 0;
+      await state.setMeta(m);
+    } catch {}
     res.status(500).json({ error: err.message || 'AI дуудах үед алдаа гарлаа.' });
   }
 });

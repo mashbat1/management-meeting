@@ -2,108 +2,280 @@
 <html lang="mn">
 <head>
   <meta charset="utf-8" />
-  <title>Хурлын Асуулт Илгээх</title>
+  <title>Асуултаа илгээх</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #312e81 100%);
-      color: #e2e8f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    :root{
+      --green:#0fff7a;
+      --green-soft:rgba(15,255,122,.6);
+      --green-glow:rgba(15,255,122,.4);
+      --green-dim:rgba(15,255,122,.15);
     }
-    .card {
-      background: rgba(30, 41, 59, 0.95);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 28px 24px;
-      width: 100%;
-      max-width: 460px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-      border: 1px solid rgba(167, 139, 250, 0.2);
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{min-height:100vh;overflow-x:hidden;}
+    body{
+      background:#000;
+      color:var(--green);
+      font-family:'Inter', sans-serif;
+      position:relative;
+      min-height:100vh;
+      padding:20px;
     }
-    h1 {
-      margin: 0 0 6px;
-      font-size: 24px;
-      background: linear-gradient(135deg, #38bdf8, #a78bfa);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+
+    .stars{
+      position:fixed;inset:0;
+      background:
+        radial-gradient(1px 1px at 20% 30%, var(--green) 50%, transparent),
+        radial-gradient(1px 1px at 70% 80%, var(--green) 50%, transparent),
+        radial-gradient(1px 1px at 40% 70%, #fff 50%, transparent),
+        radial-gradient(2px 2px at 85% 15%, var(--green) 50%, transparent),
+        radial-gradient(1px 1px at 10% 90%, #fff 50%, transparent),
+        radial-gradient(1px 1px at 55% 50%, var(--green) 50%, transparent),
+        radial-gradient(2px 2px at 90% 60%, var(--green) 50%, transparent);
+      background-size:200% 200%;
+      opacity:.4;
+      animation:drift 60s linear infinite;
+      z-index:0;
     }
-    .sub {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 24px;
+    @keyframes drift{from{background-position:0 0;}to{background-position:200% 200%;}}
+
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 20%, rgba(15,255,122,.12), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(15,255,122,.06), transparent 60%);
     }
-    label {
-      display: block;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 6px;
-      font-weight: 500;
+    .grid{
+      position:fixed;left:0;right:0;bottom:0;height:40vh;
+      background-image:
+        linear-gradient(rgba(15,255,122,.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,255,122,.15) 1px, transparent 1px);
+      background-size:60px 60px;
+      transform:perspective(500px) rotateX(60deg);
+      transform-origin:bottom;
+      animation:gridscroll 8s linear infinite;
+      mask-image:linear-gradient(to top, #000 0%, transparent 100%);
+      -webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%);
+      z-index:1;
+      pointer-events:none;
     }
-    input, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 16px;
-      font-family: inherit;
-      margin-bottom: 16px;
-      outline: none;
-      transition: border 0.15s;
+    @keyframes gridscroll{from{background-position:0 0;}to{background-position:0 60px;}}
+    .scanlines{
+      position:fixed;inset:0;pointer-events:none;z-index:50;
+      background:repeating-linear-gradient(0deg, rgba(15,255,122,.03) 0px, rgba(15,255,122,.03) 1px, transparent 1px, transparent 3px);
     }
-    input:focus, textarea:focus { border-color: #38bdf8; }
-    textarea { min-height: 130px; resize: vertical; }
-    button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #38bdf8 0%, #a78bfa 100%);
-      color: white;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
+    .scan-bar{
+      position:fixed;left:0;right:0;height:100px;pointer-events:none;z-index:51;
+      background:linear-gradient(180deg, transparent, rgba(15,255,122,.05) 50%, transparent);
+      animation:scanmove 6s linear infinite;
     }
-    button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .msg {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: 500;
-      display: none;
+    @keyframes scanmove{from{top:-100px;}to{top:100vh;}}
+
+    .corner{
+      position:fixed;width:24px;height:24px;
+      border:2px solid var(--green);
+      box-shadow:0 0 10px var(--green-glow);
+      z-index:11;pointer-events:none;
+      animation:cornerblink 3s ease-in-out infinite;
     }
-    .msg.ok { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .msg.err { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .success-icon {
-      font-size: 48px;
-      text-align: center;
-      margin: 12px 0;
+    @keyframes cornerblink{0%,100%{opacity:1;}50%{opacity:.4;}}
+    .corner.tl{top:14px;left:14px;border-right:none;border-bottom:none;}
+    .corner.tr{top:14px;right:14px;border-left:none;border-bottom:none;}
+    .corner.bl{bottom:14px;left:14px;border-right:none;border-top:none;}
+    .corner.br{bottom:14px;right:14px;border-left:none;border-top:none;}
+
+    .wrap{
+      position:relative;z-index:5;
+      min-height:calc(100vh - 40px);
+      display:flex;align-items:center;justify-content:center;
     }
-    .char-count {
-      text-align: right;
-      font-size: 12px;
-      color: #64748b;
-      margin-top: -12px;
-      margin-bottom: 14px;
+    .card{
+      position:relative;
+      width:100%;max-width:460px;
+      background:rgba(0,15,8,.65);
+      backdrop-filter:blur(10px);
+      border:1.5px solid var(--green);
+      border-radius:18px;
+      padding:32px 26px 28px;
+      box-shadow:0 0 30px var(--green-glow), inset 0 0 30px rgba(15,255,122,.05);
+      animation:fadein .6s ease;
     }
+    @keyframes fadein{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+    .card-corner{
+      position:absolute;width:16px;height:16px;
+      border:2px solid var(--green);
+      box-shadow:0 0 6px var(--green);
+    }
+    .card-corner.tl{top:-2px;left:-2px;border-right:none;border-bottom:none;}
+    .card-corner.tr{top:-2px;right:-2px;border-left:none;border-bottom:none;}
+    .card-corner.bl{bottom:-2px;left:-2px;border-right:none;border-top:none;}
+    .card-corner.br{bottom:-2px;right:-2px;border-left:none;border-top:none;}
+
+    h1{
+      font-family:'Orbitron',sans-serif;
+      font-weight:900;font-size:22px;
+      letter-spacing:.1em;color:var(--green);
+      text-shadow:0 0 10px var(--green), 0 0 20px rgba(15,255,122,.5);
+      margin-bottom:6px;
+      animation:flicker 4s infinite;
+    }
+    h1 .accent{color:#fff;text-shadow:0 0 8px #fff, 0 0 22px var(--green);}
+    @keyframes flicker{0%,18%,22%,25%,53%,57%,100%{opacity:1;}20%,24%,55%{opacity:.85;}}
+
+    .sub{
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+      color:rgba(15,255,122,.7);
+      margin-bottom:24px;
+    }
+
+    label{
+      display:block;
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--green);
+      margin-bottom:6px;
+      text-shadow:0 0 4px var(--green);
+    }
+    input, textarea{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(15,255,122,.3);
+      background:rgba(0,0,0,.5);
+      color:#fff;
+      font-family:'Inter', sans-serif;
+      font-size:15px;
+      margin-bottom:16px;
+      outline:none;
+      transition:all .2s;
+      box-shadow:inset 0 0 6px rgba(15,255,122,.08);
+    }
+    input::placeholder, textarea::placeholder{color:rgba(15,255,122,.35);}
+    input:focus, textarea:focus{
+      border-color:var(--green);
+      box-shadow:0 0 14px var(--green-glow), inset 0 0 10px rgba(15,255,122,.1);
+    }
+    textarea{min-height:130px;resize:vertical;}
+
+    .char-count{
+      text-align:right;
+      font-size:10px;
+      font-family:'JetBrains Mono',monospace;
+      color:rgba(15,255,122,.55);
+      margin-top:-12px;margin-bottom:14px;
+      letter-spacing:.1em;
+    }
+
+    button[type="submit"]{
+      width:100%;
+      padding:14px;
+      border-radius:10px;
+      border:1.5px solid var(--green);
+      font-family:'Orbitron',sans-serif;
+      font-size:14px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+      background:linear-gradient(135deg, rgba(15,255,122,.15), rgba(15,255,122,.05));
+      color:var(--green);
+      cursor:pointer;
+      transition:all .2s;
+      box-shadow:0 0 18px var(--green-glow), inset 0 0 14px rgba(15,255,122,.1);
+      text-shadow:0 0 6px var(--green);
+    }
+    button[type="submit"]:hover{
+      background:linear-gradient(135deg, rgba(15,255,122,.25), rgba(15,255,122,.1));
+      box-shadow:0 0 28px var(--green), inset 0 0 20px rgba(15,255,122,.2);
+      color:#fff;
+      text-shadow:0 0 10px #fff, 0 0 20px var(--green);
+    }
+    button[type="submit"]:active{transform:scale(0.98);}
+    button[type="submit"]:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+    .msg{
+      margin-top:16px;
+      padding:14px;
+      border-radius:10px;
+      text-align:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+      display:none;
+      animation:fadein .3s;
+    }
+    .msg.ok{
+      background:rgba(15,255,122,.1);
+      border:1px solid var(--green);
+      color:var(--green);
+      box-shadow:0 0 16px var(--green-glow);
+    }
+    .msg.err{
+      background:rgba(255,80,80,.1);
+      border:1px solid #ff5050;
+      color:#ff8080;
+    }
+    .success-icon{
+      font-size:48px;margin:6px 0 12px;
+      filter:drop-shadow(0 0 10px var(--green));
+    }
+    .msg.ok .hint{
+      display:block;margin-top:8px;
+      font-size:10px;opacity:.8;letter-spacing:.15em;
+    }
+
+    .top-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:5px 14px;
+      border:1px solid var(--green);
+      background:rgba(15,255,122,.08);
+      border-radius:20px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--green);
+      box-shadow:0 0 10px var(--green-glow);
+      margin-bottom:18px;
+    }
+    .top-badge::before{
+      content:"";width:6px;height:6px;border-radius:50%;
+      background:var(--green);box-shadow:0 0 6px var(--green);
+      animation:dotpulse 1.4s infinite;
+    }
+    @keyframes dotpulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+    .spinner{
+      display:inline-block;width:14px;height:14px;
+      border:2px solid rgba(15,255,122,.3);
+      border-top-color:var(--green);
+      border-radius:50%;
+      animation:spin .6s linear infinite;
+      vertical-align:middle;margin-right:8px;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
   </style>
 </head>
 <body>
+
+<div class="stars"></div>
+<div class="grid"></div>
+<div class="scanlines"></div>
+<div class="scan-bar"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="wrap">
   <div class="card">
-    <h1>Асуулт илгээх</h1>
-    <div class="sub">Илтгэгчдээс асуух асуултаа доорх талбарт бичээд илгээнэ үү.</div>
+    <div class="card-corner tl"></div>
+    <div class="card-corner tr"></div>
+    <div class="card-corner bl"></div>
+    <div class="card-corner br"></div>
+
+    <div class="top-badge">// Q&amp;A · Илгээх форм</div>
+    <h1>АСУУЛТАА ИЛГ<span class="accent">Э</span>ЭН<span class="accent">Э</span> ҮҮ</h1>
+    <div class="sub">// Илтгэгчдэд асуултаа бичээд илгээнэ үү</div>
+
     <form id="form">
       <label for="name">Таны нэр (заавал биш)</label>
       <input id="name" name="name" maxlength="80" placeholder="Жишээ: Болормаа" autocomplete="name" />
@@ -112,63 +284,64 @@
       <textarea id="question" name="question" maxlength="1000" required placeholder="Илтгэгчээс асуухыг хүсэж буй асуултаа бичнэ үү..."></textarea>
       <div class="char-count"><span id="count">0</span> / 1000</div>
 
-      <button type="submit" id="submitBtn">Илгээх</button>
+      <button type="submit" id="submitBtn">// ИЛГЭЭХ</button>
     </form>
     <div class="msg" id="msg"></div>
   </div>
+</div>
 
-  <script>
-    const form = document.getElementById('form');
-    const qInput = document.getElementById('question');
-    const countEl = document.getElementById('count');
-    const msg = document.getElementById('msg');
+<script>
+  const form = document.getElementById('form');
+  const qInput = document.getElementById('question');
+  const countEl = document.getElementById('count');
+  const msg = document.getElementById('msg');
+  const submitBtn = document.getElementById('submitBtn');
 
-    qInput.addEventListener('input', () => {
-      countEl.textContent = qInput.value.length;
-    });
+  qInput.addEventListener('input', () => {
+    countEl.textContent = qInput.value.length;
+  });
 
-    function showMsg(text, type, html=false) {
-      msg.className = 'msg ' + type;
-      msg.style.display = 'block';
-      if (html) msg.innerHTML = text; else msg.textContent = text;
+  function showMsg(text, type, html=false) {
+    msg.className = 'msg ' + type;
+    msg.style.display = 'block';
+    if (html) msg.innerHTML = text; else msg.textContent = text;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span>// ИЛГЭЭЖ БАЙНА...';
+    msg.style.display = 'none';
+
+    const data = {
+      name: document.getElementById('name').value.trim(),
+      question: qInput.value.trim(),
+    };
+    if (data.question.length < 3) {
+      showMsg('Асуулт хэт богино байна.', 'err');
+      submitBtn.disabled = false; submitBtn.innerHTML = '// ИЛГЭЭХ';
+      return;
     }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Илгээж байна...';
-      msg.style.display = 'none';
-
-      const data = {
-        name: document.getElementById('name').value.trim(),
-        question: qInput.value.trim(),
-      };
-      if (data.question.length < 3) {
-        showMsg('Асуулт хэт богино байна.', 'err');
-        btn.disabled = false; btn.textContent = 'Илгээх';
-        return;
+    try {
+      const r = await fetch('/api/questions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (j.ok) {
+        showMsg('<div class="success-icon">✓</div><div>АСУУЛТ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ</div><div class="hint">Өөр асуулт байвал дахин илгээж болно</div>', 'ok', true);
+        form.reset();
+        countEl.textContent = '0';
+      } else {
+        showMsg(j.error || 'Алдаа гарлаа', 'err');
       }
-      try {
-        const r = await fetch('/api/questions', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data),
-        });
-        const j = await r.json();
-        if (j.ok) {
-          showMsg('<div class="success-icon">✅</div><div>Асуулт амжилттай илгээгдлээ!</div><div style="font-size:13px;margin-top:6px;opacity:0.8">Өөр асуулт байвал дахин илгээж болно.</div>', 'ok', true);
-          form.reset();
-          countEl.textContent = '0';
-        } else {
-          showMsg(j.error || 'Алдаа гарлаа', 'err');
-        }
-      } catch (err) {
-        showMsg('Сүлжээний алдаа: ' + err.message, 'err');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Илгээх';
-      }
-    });
-  </script>
+    } catch (err) {
+      showMsg('Сүлжээний алдаа: ' + err.message, 'err');
+    } finally {
+      submitBtn.disabled = false; submitBtn.innerHTML = '// ИЛГЭЭХ';
+    }
+  });
+</script>
 </body>
 </html>
