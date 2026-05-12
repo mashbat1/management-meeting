@@ -1,271 +1,535 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="mn">
 <head>
-  <meta charset="utf-8" />
-  <title>Хурлын Дэлгэц</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-      color: #e2e8f0;
-      min-height: 100vh;
-      padding: 40px 60px;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .header h1 {
-      font-size: 52px;
-      margin: 0;
-      background: linear-gradient(135deg, #38bdf8, #a78bfa, #f472b6);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
-    .header .sub {
-      color: #94a3b8;
-      font-size: 22px;
-      margin-top: 12px;
-    }
-    .round-badge {
-      display: inline-block;
-      margin-top: 14px;
-      background: rgba(167, 139, 250, 0.2);
-      color: #c4b5fd;
-      padding: 6px 18px;
-      border-radius: 20px;
-      font-size: 16px;
-      font-weight: 600;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Хурлын Дэлгэц</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green: #0fff7a;
+    --green-soft: rgba(15,255,122,.6);
+    --green-glow: rgba(15,255,122,.4);
+    --green-dim: rgba(15,255,122,.15);
+    --bg: #000;
+    --panel: rgba(0,20,10,.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100vh;overflow-x:hidden;}
+  body{
+    background:#000;
+    color:var(--green);
+    font-family:'Inter', sans-serif;
+    position:relative;
+    min-height:100vh;
+  }
 
-    /* === QR COLLECTION VIEW === */
-    .qr-view {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-      padding: 20px 0 60px;
-    }
-    .qr-frame {
-      background: white;
-      padding: 28px;
-      border-radius: 28px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 4px rgba(167, 139, 250, 0.3);
-    }
-    .qr-frame img {
-      display: block;
-      width: 460px;
-      height: 460px;
-      max-width: 70vh;
-      max-height: 70vh;
-    }
-    .qr-instructions {
-      text-align: center;
-      max-width: 700px;
-    }
-    .qr-instructions .big {
-      font-size: 36px;
-      font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 14px;
-    }
-    .qr-instructions .small {
-      font-size: 18px;
-      color: #94a3b8;
-      line-height: 1.6;
-    }
-    .qr-stats {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 10px 20px;
-      border-radius: 14px;
-      font-size: 18px;
-      color: #38bdf8;
-      font-weight: 600;
-    }
-    .qr-stats .pulse {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 12px #4ade80;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.3} }
+  /* ========== ANIMATED BG LAYERS ========== */
+  .stars{
+    position:fixed;inset:0;
+    background:
+      radial-gradient(1px 1px at 20% 30%, var(--green) 50%, transparent),
+      radial-gradient(1px 1px at 70% 80%, var(--green) 50%, transparent),
+      radial-gradient(1px 1px at 40% 70%, #fff 50%, transparent),
+      radial-gradient(2px 2px at 85% 15%, var(--green) 50%, transparent),
+      radial-gradient(1px 1px at 10% 90%, #fff 50%, transparent),
+      radial-gradient(1px 1px at 55% 50%, var(--green) 50%, transparent),
+      radial-gradient(1px 1px at 90% 60%, #fff 50%, transparent),
+      radial-gradient(2px 2px at 30% 10%, var(--green) 50%, transparent);
+    background-size:200% 200%;
+    opacity:.4;
+    animation:drift 60s linear infinite;
+    z-index:0;
+  }
+  @keyframes drift{from{background-position:0 0;}to{background-position:200% 200%;}}
 
-    /* === TOP 3 VIEW === */
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 30px;
-      max-width: 1700px;
-      margin: 0 auto;
-    }
-    @media (max-width: 1400px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 1000px) {
-      .grid { grid-template-columns: 1fr; }
-      .header h1 { font-size: 36px; }
-      .qr-frame img { width: 320px; height: 320px; }
-    }
-    .card {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(20px);
-      border-radius: 22px;
-      padding: 32px;
-      border: 1px solid rgba(167, 139, 250, 0.3);
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-      position: relative;
-    }
-    .rank {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #38bdf8, #a78bfa);
-      color: white;
-      font-size: 32px;
-      font-weight: 800;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
-    }
-    .author {
-      color: #94a3b8;
-      font-size: 16px;
-      margin-bottom: 14px;
-      font-weight: 500;
-    }
-    .q-text {
-      font-size: 24px;
-      font-weight: 600;
-      line-height: 1.45;
-      margin-bottom: 22px;
-      color: #f1f5f9;
-    }
-    .reason {
-      background: rgba(15, 23, 42, 0.6);
-      padding: 18px 20px;
-      border-radius: 12px;
-      font-size: 15px;
-      color: #cbd5e1;
-      line-height: 1.6;
-      border-left: 4px solid #a78bfa;
-    }
-    .reason b { color: #a78bfa; }
-    .badge {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(56, 189, 248, 0.2);
-      color: #38bdf8;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-  </style>
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 30%, rgba(15,255,122,.10), transparent 60%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(15,255,122,.06), transparent 60%);
+  }
+
+  /* perspective grid */
+  .grid{
+    position:fixed;left:0;right:0;bottom:0;height:50vh;
+    background-image:
+      linear-gradient(rgba(15,255,122,.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,255,122,.15) 1px, transparent 1px);
+    background-size:60px 60px;
+    transform:perspective(500px) rotateX(60deg);
+    transform-origin:bottom;
+    animation:gridscroll 8s linear infinite;
+    mask-image:linear-gradient(to top, #000 0%, transparent 100%);
+    -webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%);
+    z-index:1;
+    pointer-events:none;
+  }
+  @keyframes gridscroll{from{background-position:0 0;}to{background-position:0 60px;}}
+
+  /* scanlines + moving scan bar */
+  .scanlines{
+    position:fixed;inset:0;pointer-events:none;z-index:50;
+    background:repeating-linear-gradient(
+      0deg,
+      rgba(15,255,122,.03) 0px,
+      rgba(15,255,122,.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  .scan-bar{
+    position:fixed;left:0;right:0;height:140px;pointer-events:none;z-index:51;
+    background:linear-gradient(180deg, transparent, rgba(15,255,122,.06) 50%, transparent);
+    animation:scanmove 7s linear infinite;
+  }
+  @keyframes scanmove{from{top:-140px;}to{top:100vh;}}
+
+  /* corner brackets */
+  .corner{
+    position:fixed;width:36px;height:36px;
+    border:2px solid var(--green);
+    box-shadow:0 0 12px var(--green-glow);
+    z-index:11;pointer-events:none;
+    animation:cornerblink 3s ease-in-out infinite;
+  }
+  @keyframes cornerblink{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .corner.tl{top:20px;left:20px;border-right:none;border-bottom:none;}
+  .corner.tr{top:20px;right:20px;border-left:none;border-bottom:none;}
+  .corner.bl{bottom:20px;left:20px;border-right:none;border-top:none;}
+  .corner.br{bottom:20px;right:20px;border-left:none;border-top:none;}
+
+  /* ========== MAIN CONTENT ========== */
+  .main{
+    position:relative;z-index:5;
+    min-height:100vh;
+    padding:40px 24px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+
+  .view{display:none;width:100%;}
+  .view.active{display:flex;flex-direction:column;align-items:center;}
+
+  /* === QR VIEW === */
+  .header{text-align:center;margin-bottom:36px;animation:fadein .8s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:none;}}
+
+  h1{
+    font-family:'Orbitron', sans-serif;
+    font-weight:900;font-size:46px;
+    letter-spacing:.04em;
+    color:var(--green);
+    text-shadow:
+      0 0 10px rgba(15,255,122,.8),
+      0 0 30px rgba(15,255,122,.5),
+      0 0 60px rgba(15,255,122,.3);
+    animation:flicker 4s infinite;
+    margin-bottom:14px;
+  }
+  h1 .accent{color:#fff;text-shadow:0 0 10px #fff, 0 0 28px var(--green);}
+  @keyframes flicker{
+    0%,18%,22%,25%,53%,57%,100%{opacity:1;}
+    20%,24%,55%{opacity:.85;}
+  }
+  .subtitle{
+    color:rgba(15,255,122,.75);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 18px;
+    border:1px solid var(--green);
+    background:rgba(15,255,122,.08);
+    color:var(--green);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    box-shadow:0 0 14px var(--green-glow), inset 0 0 14px rgba(15,255,122,.1);
+    text-shadow:0 0 6px var(--green);
+  }
+  .badge::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--green);box-shadow:0 0 8px var(--green);
+    animation:dotpulse 1.4s infinite;
+  }
+  @keyframes dotpulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* QR FRAME */
+  .qr-frame{
+    position:relative;
+    width:380px;max-width:90vw;aspect-ratio:1;
+    margin:20px 0 28px;
+    animation:fadein 1s ease .2s both;
+  }
+  .ring-outer, .ring-mid, .ring-far{position:absolute;border-radius:50%;pointer-events:none;}
+  .ring-far{
+    inset:-220px;
+    border:1.5px dashed rgba(15,255,122,.22);
+    animation:spin 50s linear infinite;
+    box-shadow:0 0 40px rgba(15,255,122,.08), inset 0 0 40px rgba(15,255,122,.05);
+  }
+  .ring-outer{
+    inset:-140px;
+    border:1.5px dashed rgba(15,255,122,.35);
+    animation:spin 35s linear infinite reverse;
+    box-shadow:0 0 30px rgba(15,255,122,.12);
+  }
+  .ring-mid{
+    inset:-70px;
+    border:1.5px dotted rgba(15,255,122,.55);
+    animation:spin 22s linear infinite;
+    box-shadow:0 0 20px rgba(15,255,122,.15);
+  }
+  .ring-far::before, .ring-far::after,
+  .ring-outer::before, .ring-outer::after,
+  .ring-mid::before, .ring-mid::after{
+    content:"";position:absolute;
+    background:var(--green);border-radius:50%;
+    box-shadow:0 0 12px var(--green), 0 0 22px var(--green);
+  }
+  .ring-far::before, .ring-far::after{width:14px;height:14px;}
+  .ring-outer::before, .ring-outer::after{width:12px;height:12px;}
+  .ring-mid::before, .ring-mid::after{width:9px;height:9px;}
+  .ring-far::before{top:-7px;left:50%;transform:translateX(-50%);}
+  .ring-far::after{bottom:-7px;left:50%;transform:translateX(-50%);}
+  .ring-outer::before{left:-6px;top:50%;transform:translateY(-50%);}
+  .ring-outer::after{right:-6px;top:50%;transform:translateY(-50%);}
+  .ring-mid::before{top:-4.5px;left:50%;transform:translateX(-50%);}
+  .ring-mid::after{bottom:-4.5px;left:50%;transform:translateX(-50%);}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+  .qr-card{
+    position:relative;width:100%;height:100%;
+    background:#0a0a0a;
+    border:2px solid var(--green);
+    border-radius:18px;
+    padding:24px;
+    box-shadow:
+      0 0 30px var(--green-glow),
+      0 0 60px rgba(15,255,122,.2),
+      inset 0 0 30px rgba(15,255,122,.08);
+    display:grid;place-items:center;
+    overflow:hidden;
+  }
+  .qr-corner{position:absolute;width:20px;height:20px;border:2px solid var(--green);box-shadow:0 0 8px var(--green);}
+  .qr-corner.tl{top:8px;left:8px;border-right:none;border-bottom:none;}
+  .qr-corner.tr{top:8px;right:8px;border-left:none;border-bottom:none;}
+  .qr-corner.bl{bottom:8px;left:8px;border-right:none;border-top:none;}
+  .qr-corner.br{bottom:8px;right:8px;border-left:none;border-top:none;}
+  .qr-scan{
+    position:absolute;left:24px;right:24px;height:3px;
+    background:linear-gradient(90deg, transparent, var(--green), transparent);
+    box-shadow:0 0 12px var(--green), 0 0 24px var(--green);
+    animation:qrscan 2.5s ease-in-out infinite;
+    z-index:2;
+  }
+  @keyframes qrscan{
+    0%, 100%{top:24px;opacity:1;}
+    50%{top:calc(100% - 27px);opacity:1;}
+  }
+
+  /* Real QR — recolor black→neon green */
+  .qr-img{
+    width:100%;height:100%;
+    object-fit:contain;
+    filter: invert(1) sepia(1) saturate(8) hue-rotate(80deg) brightness(1.1) drop-shadow(0 0 8px rgba(15,255,122,.4));
+  }
+
+  /* INFO BELOW QR */
+  .info{text-align:center;animation:fadein 1s ease .4s both;}
+  .info-title{
+    font-family:'Orbitron', sans-serif;
+    font-weight:700;font-size:24px;
+    color:#fff;
+    text-shadow:0 0 10px var(--green), 0 0 22px rgba(15,255,122,.5);
+    margin-bottom:10px;
+    letter-spacing:.02em;
+  }
+  .info-sub{
+    color:rgba(15,255,122,.7);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    margin-bottom:24px;
+  }
+  .counter{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:14px 24px;
+    background:rgba(15,255,122,.08);
+    border:1px solid var(--green);
+    color:var(--green);
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;
+    box-shadow:0 0 18px var(--green-glow), inset 0 0 18px rgba(15,255,122,.08);
+    text-shadow:0 0 6px var(--green);
+  }
+  .counter .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 10px var(--green), 0 0 20px var(--green);
+    animation:dotpulse 1.4s ease-in-out infinite;
+  }
+  .counter .num{
+    font-family:'Orbitron', sans-serif;
+    font-weight:700;font-size:18px;color:#fff;
+    text-shadow:0 0 8px var(--green);
+    min-width:24px;text-align:center;
+    transition:all .4s;
+  }
+  .counter .num.bump{color:#fff;text-shadow:0 0 20px #fff, 0 0 40px var(--green);}
+
+  .wave{display:flex;gap:4px;align-items:center;height:24px;margin-top:18px;justify-content:center;}
+  .wave span{
+    width:3px;background:var(--green);border-radius:2px;
+    box-shadow:0 0 6px var(--green);
+    animation:bars 1.2s ease-in-out infinite;
+  }
+  .wave span:nth-child(1){height:8px;animation-delay:0s;}
+  .wave span:nth-child(2){height:14px;animation-delay:.1s;}
+  .wave span:nth-child(3){height:20px;animation-delay:.2s;}
+  .wave span:nth-child(4){height:16px;animation-delay:.3s;}
+  .wave span:nth-child(5){height:22px;animation-delay:.4s;}
+  .wave span:nth-child(6){height:12px;animation-delay:.5s;}
+  .wave span:nth-child(7){height:18px;animation-delay:.6s;}
+  .wave span:nth-child(8){height:10px;animation-delay:.7s;}
+  .wave span:nth-child(9){height:14px;animation-delay:.8s;}
+  @keyframes bars{0%,100%{transform:scaleY(.3);}50%{transform:scaleY(1);}}
+
+  /* === TOP 3 VIEW === */
+  .top3-header{text-align:center;margin-bottom:30px;animation:fadein .8s ease;}
+  .top3-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:24px;
+    max-width:1700px;
+    width:100%;
+    animation:fadein .8s ease .15s both;
+  }
+  @media (max-width:1400px){.top3-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:900px){.top3-grid{grid-template-columns:1fr;}}
+
+  .q-card{
+    position:relative;
+    background:rgba(0,20,10,.55);
+    border:1.5px solid var(--green);
+    border-radius:18px;
+    padding:32px 28px 28px;
+    box-shadow:0 0 24px var(--green-glow), inset 0 0 24px rgba(15,255,122,.05);
+    overflow:hidden;
+  }
+  .q-card .q-corner{
+    position:absolute;width:16px;height:16px;
+    border:2px solid var(--green);
+    box-shadow:0 0 6px var(--green);
+  }
+  .q-card .q-corner.tl{top:8px;left:8px;border-right:none;border-bottom:none;}
+  .q-card .q-corner.tr{top:8px;right:8px;border-left:none;border-bottom:none;}
+  .q-card .q-corner.bl{bottom:8px;left:8px;border-right:none;border-top:none;}
+  .q-card .q-corner.br{bottom:8px;right:8px;border-left:none;border-top:none;}
+  .q-rank{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:54px;height:54px;
+    background:rgba(15,255,122,.08);
+    border:2px solid var(--green);
+    border-radius:50%;
+    font-family:'Orbitron', sans-serif;
+    font-weight:900;font-size:26px;
+    color:#fff;
+    text-shadow:0 0 12px var(--green), 0 0 24px rgba(15,255,122,.6);
+    box-shadow:0 0 16px var(--green-glow), inset 0 0 16px rgba(15,255,122,.1);
+    margin-bottom:16px;
+  }
+  .q-author{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(15,255,122,.7);
+    margin-bottom:14px;
+  }
+  .q-text{
+    font-family:'Orbitron', sans-serif;
+    font-weight:500;
+    font-size:22px;line-height:1.45;
+    color:#fff;
+    text-shadow:0 0 8px rgba(15,255,122,.4);
+    margin-bottom:22px;
+    letter-spacing:.005em;
+  }
+  .q-reason{
+    background:rgba(0,0,0,.4);
+    border-left:3px solid var(--green);
+    padding:14px 16px;
+    border-radius:0 10px 10px 0;
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;line-height:1.65;
+    color:rgba(15,255,122,.85);
+    box-shadow:inset 0 0 10px rgba(15,255,122,.05);
+  }
+  .q-reason b{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--green);
+    margin-bottom:6px;
+    text-shadow:0 0 6px var(--green);
+  }
+
+  @media (max-width:780px){
+    .corner{width:24px;height:24px;}
+    h1{font-size:30px;letter-spacing:.02em;}
+    .info-title{font-size:18px;}
+    .qr-frame{width:280px;}
+    .ring-far{inset:-100px;}
+    .ring-outer{inset:-60px;}
+    .ring-mid{inset:-30px;}
+    .q-text{font-size:18px;}
+  }
+</style>
 </head>
 <body>
-  <div class="header" id="headerBox">
-    <h1 id="title">Асуултаа илгээнэ үү</h1>
-    <div class="sub" id="subText">Утсаараа QR кодыг скан хийнэ үү</div>
-    <div class="round-badge">Илтгэл #<span id="roundNum">1</span></div>
-  </div>
-  <div id="content"></div>
 
-  <script>
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+<div class="stars"></div>
+<div class="grid"></div>
+<div class="scanlines"></div>
+<div class="scan-bar"></div>
 
-    let qrDataUrl = null;
-    let cachedCount = 0;
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
 
-    async function ensureQR() {
-      if (!qrDataUrl) {
-        const r = await fetch('/api/qr');
-        const j = await r.json();
-        qrDataUrl = j.qr;
-      }
-    }
+<main class="main">
 
-    async function loadStats() {
-      try {
-        const r = await fetch('/api/questions');
-        const j = await r.json();
-        cachedCount = j.currentRoundCount || 0;
-      } catch (e) {}
-    }
+  <!-- QR COLLECTION VIEW -->
+  <section id="viewQR" class="view active">
+    <div class="header">
+      <h1>АСУУЛТАА ИЛГ<span class="accent">Э</span>ЭН<span class="accent">Э</span> ҮҮ</h1>
+      <div class="subtitle">// Утсаараа QR кодыг скан хийнэ үү</div>
+      <div class="badge">Илтгэл · #<span id="roundNumQR">1</span></div>
+    </div>
 
-    function renderQRView(round) {
-      return `<div class="qr-view">
-        <div class="qr-frame"><img src="${qrDataUrl}" alt="QR Code" /></div>
-        <div class="qr-instructions">
-          <div class="big">Утсаараа QR кодыг скан хийнэ үү</div>
-          <div class="small">Илтгэгчдэд асуултаа бичээд илгээнэ үү</div>
-        </div>
-        <div class="qr-stats">
-          <span class="pulse"></span>
-          <span><span id="cntInline">${cachedCount}</span> асуулт ирлээ</span>
-        </div>
+    <div class="qr-frame">
+      <div class="ring-far"></div>
+      <div class="ring-outer"></div>
+      <div class="ring-mid"></div>
+      <div class="qr-card">
+        <div class="qr-corner tl"></div>
+        <div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div>
+        <div class="qr-corner br"></div>
+        <div class="qr-scan"></div>
+        <img id="qrImg" class="qr-img" alt="QR Code" />
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="info-title">// Утсаараа QR кодыг скан хийнэ үү</div>
+      <div class="info-sub">Илтгэгчдэд асуултаа бичээд илгээнэ үү</div>
+      <div class="counter">
+        <span class="dot"></span>
+        <span class="num" id="count">0</span>
+        <span>асуулт ирлээ</span>
+      </div>
+      <div class="wave">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOP 3 VIEW -->
+  <section id="viewTop" class="view">
+    <div class="top3-header">
+      <div class="badge">Илтгэл · #<span id="roundNumTop">1</span></div>
+    </div>
+    <div class="top3-grid" id="top3Grid"></div>
+  </section>
+
+</main>
+
+<script>
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  let qrLoaded = false;
+  let lastCount = 0;
+  let mode = 'qr';
+
+  async function loadQR(){
+    if (qrLoaded) return;
+    try {
+      const r = await fetch('/api/qr');
+      const j = await r.json();
+      document.getElementById('qrImg').src = j.qr;
+      qrLoaded = true;
+    } catch(e){}
+  }
+
+  function bumpCounter(){
+    const el = document.getElementById('count');
+    el.classList.add('bump');
+    setTimeout(()=>el.classList.remove('bump'), 800);
+  }
+
+  async function loadStats(){
+    try {
+      const r = await fetch('/api/questions');
+      const j = await r.json();
+      const newCount = j.currentRoundCount || 0;
+      if (newCount > lastCount && lastCount > 0) bumpCounter();
+      lastCount = newCount;
+      document.getElementById('count').textContent = newCount;
+    } catch(e){}
+  }
+
+  function renderTop3(topTwo){
+    const grid = document.getElementById('top3Grid');
+    grid.innerHTML = topTwo.items.map((it, i) => {
+      const display = it.displayQuestion || it.question;
+      return `
+      <div class="q-card">
+        <div class="q-corner tl"></div>
+        <div class="q-corner tr"></div>
+        <div class="q-corner bl"></div>
+        <div class="q-corner br"></div>
+        <div class="q-rank">${i+1}</div>
+        <div class="q-author">// ${escapeHtml(it.name)} · #${it.id}</div>
+        <div class="q-text">${escapeHtml(display)}</div>
+        <div class="q-reason"><b>Яагаад чухал</b>${escapeHtml(it.reason)}</div>
       </div>`;
-    }
+    }).join('');
+  }
 
-    function renderTop2View(topTwo) {
-      return `<div class="grid">` + topTwo.items.map((it, i) => {
-        const display = it.displayQuestion || it.question;
-        return `
-        <div class="card">
-          <div class="badge">#${it.id}</div>
-          <div class="rank">${i+1}</div>
-          <div class="author">${escapeHtml(it.name)}</div>
-          <div class="q-text">${escapeHtml(display)}</div>
-          <div class="reason"><b>Яагаад чухал:</b> ${escapeHtml(it.reason)}</div>
-        </div>`;
-      }).join('') + `</div>`;
-    }
+  function switchView(target){
+    if (mode === target) return;
+    mode = target;
+    document.getElementById('viewQR').classList.toggle('active', target === 'qr');
+    document.getElementById('viewTop').classList.toggle('active', target === 'top');
+  }
 
-    async function load() {
-      await ensureQR();
-      await loadStats();
+  async function poll(){
+    try {
       const r = await fetch('/api/top2');
       const j = await r.json();
-      const content = document.getElementById('content');
-      const title = document.getElementById('title');
-      const sub = document.getElementById('subText');
-      const roundNum = document.getElementById('roundNum');
-
       const round = j.topTwo ? (j.topTwo.round || 1) : (j.currentRound || 1);
-      roundNum.textContent = round;
-
-      const header = document.getElementById('headerBox');
-      if (!j.topTwo) {
-        title.textContent = 'Асуултаа илгээнэ үү';
-        sub.textContent = 'Утсаараа QR кодыг скан хийнэ үү';
-        title.style.display = '';
-        sub.style.display = '';
-        header.style.marginBottom = '';
-        content.innerHTML = renderQRView(round);
+      document.getElementById('roundNumQR').textContent = round;
+      document.getElementById('roundNumTop').textContent = round;
+      if (j.topTwo) {
+        renderTop3(j.topTwo);
+        switchView('top');
       } else {
-        title.style.display = 'none';
-        sub.style.display = 'none';
-        header.style.marginBottom = '20px';
-        content.innerHTML = renderTop2View(j.topTwo);
+        await loadQR();
+        await loadStats();
+        switchView('qr');
       }
-    }
+    } catch(e){}
+  }
 
-    load();
-    setInterval(load, 3000);
-  </script>
+  poll();
+  setInterval(poll, 3000);
+</script>
 </body>
 </html>
