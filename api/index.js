@@ -10,6 +10,20 @@ const app = express();
 app.use(express.json({ limit: '256kb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Health check — useful for diagnosing missing env vars on Vercel
+app.get('/api/health', (req, res) => {
+  const hasRedis = !!(process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL)
+    && !!(process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN);
+  const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+  res.json({
+    ok: hasRedis && hasOpenRouter,
+    redis: hasRedis ? 'configured' : 'MISSING — set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN',
+    openrouter: hasOpenRouter ? 'configured' : 'MISSING — set OPENROUTER_API_KEY',
+    model: process.env.MODEL || 'google/gemini-2.5-flash',
+    vercelUrl: process.env.VERCEL_URL || null,
+  });
+});
+
 // ============ Static views ============
 const VIEWS_DIR = path.join(__dirname, '..', 'views');
 app.get('/', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'admin.html')));
