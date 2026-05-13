@@ -247,18 +247,6 @@ app.post('/api/select', async (req, res) => {
       items = pickFallbackByLength(roundQuestions, 2);
     }
 
-    if (items.length === 0) {
-      // Genuinely no substantive question. Clear thinking flag and tell admin.
-      console.log('[/api/select] No substantive questions — refusing to pick');
-      const m = await state.getMeta();
-      m.thinkingUntil = 0;
-      m.topTwo = null;
-      await state.setMeta(m);
-      return res.status(400).json({
-        error: 'Энэ илтгэлд утга агуулсан асуулт алга байна. Бодит асуулт цуглуулаад дахин оролдоно уу.',
-      });
-    }
-
     // Re-fetch meta in case other writes happened
     const meta2 = await state.getMeta();
     const topTwo = {
@@ -267,10 +255,15 @@ app.post('/api/select', async (req, res) => {
       selectedAt: new Date().toISOString(),
       model: MODEL,
       items,
+      noQuestions: items.length === 0, // signal to /display: show "no questions" card
     };
     meta2.topTwo = topTwo;
     // Keep thinkingUntil — display will honor the 5.5s minimum
     await state.setMeta(meta2);
+
+    if (items.length === 0) {
+      console.log('[/api/select] No substantive questions — showing empty-state card');
+    }
 
     const thinkingRemainingMs = Math.max(0, (meta2.thinkingUntil || 0) - Date.now());
     res.json({ ok: true, topTwo, thinkingRemainingMs });

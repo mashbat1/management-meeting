@@ -377,6 +377,36 @@
     text-shadow:0 0 6px var(--green);
   }
 
+  /* === EMPTY STATE — no substantive question === */
+  .q-card.q-empty{
+    text-align:center;
+    padding:60px 40px;
+    background:rgba(0,15,8,.4);
+    border-style:dashed;
+    border-color:rgba(15,255,122,.5);
+  }
+  .q-empty-icon{
+    font-family:'Orbitron',sans-serif;
+    font-size:96px;font-weight:900;
+    color:var(--green);
+    line-height:1;margin-bottom:20px;
+    text-shadow:0 0 20px var(--green),0 0 40px var(--green),0 0 80px rgba(15,255,122,.5);
+    animation:flicker 4s infinite;
+  }
+  .q-empty-title{
+    font-family:'Orbitron',sans-serif;
+    font-weight:800;font-size:28px;
+    line-height:1.3;letter-spacing:.08em;
+    color:#fff;
+    text-shadow:0 0 10px var(--green),0 0 22px rgba(15,255,122,.5);
+    margin-bottom:18px;
+  }
+  .q-empty-sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(15,255,122,.6);
+  }
+
   /* === THINKING VIEW === */
   #viewThinking.active{justify-content:flex-start;padding-top:20px;}
   .thinking-title{text-align:center;margin-bottom:10px;animation:fadein .6s ease;}
@@ -1098,6 +1128,25 @@
 
   function renderTop3(topTwo){
     const grid = document.getElementById('top3Grid');
+    if (!topTwo.items || topTwo.items.length === 0) {
+      // No substantive questions — show a clear empty-state card instead
+      grid.innerHTML = `
+      <div class="q-card q-empty">
+        <div class="q-corner tl"></div>
+        <div class="q-corner tr"></div>
+        <div class="q-corner bl"></div>
+        <div class="q-corner br"></div>
+        <div class="q-empty-icon">∅</div>
+        <div class="q-empty-title">ТАНААС АСУУХ<br>АСУУЛТ БАЙХГҮЙ БАЙНА</div>
+        <div class="q-empty-sub">// Q&amp;A · null</div>
+      </div>`;
+      // Make it span all columns
+      grid.style.gridTemplateColumns = '1fr';
+      grid.style.maxWidth = '700px';
+      return;
+    }
+    grid.style.gridTemplateColumns = '';
+    grid.style.maxWidth = '';
     grid.innerHTML = topTwo.items.map((it, i) => {
       const display = it.displayQuestion || it.question;
       return `

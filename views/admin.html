@@ -783,7 +783,17 @@
 
     function renderTop2(topTwo) {
       document.getElementById('selRound').textContent = topTwo.round || 1;
-      document.getElementById('top2Grid').innerHTML = topTwo.items.map((it, i) => {
+      const grid = document.getElementById('top2Grid');
+      if (!topTwo.items || topTwo.items.length === 0) {
+        grid.innerHTML = `
+        <div class="top-card top-empty" style="grid-column:1/-1;text-align:center;padding:50px 30px;border-style:dashed;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:72px;font-weight:900;color:var(--green);text-shadow:0 0 18px var(--green);margin-bottom:14px;">∅</div>
+          <div class="q-text" style="font-size:22px;letter-spacing:.05em;">ТАНААС АСУУХ АСУУЛТ БАЙХГҮЙ БАЙНА</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(15,255,122,.55);margin-top:12px;">// Q&amp;A · null</div>
+        </div>`;
+        return;
+      }
+      grid.innerHTML = topTwo.items.map((it, i) => {
         const display = it.displayQuestion || it.question;
         return `
         <div class="top-card">
@@ -810,7 +820,8 @@
         const r = await fetch('/api/select', { method: 'POST' });
         const j = await r.json();
         if (j.ok) {
-          toast('Top 3 сонгогдлоо!', 'ok');
+          const empty = j.topTwo && (!j.topTwo.items || j.topTwo.items.length === 0);
+          toast(empty ? 'Утга агуулсан асуулт олдсонгүй' : 'Top 3 сонгогдлоо!', empty ? 'err' : 'ok');
           lastTopTwo = j.topTwo;
           renderTop2(j.topTwo);
           showView('Selected');
