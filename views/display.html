@@ -396,24 +396,24 @@
     margin:10px 0;
   }
   .t-scene{
-    position:relative;width:520px;height:520px;
+    position:relative;width:520px;height:600px;
     display:grid;place-items:center;
   }
   .t-ring{position:absolute;border-radius:50%;pointer-events:none;}
   .t-ring-far{
-    width:520px;height:520px;
+    width:520px;height:600px;
     border:1.5px dashed rgba(15,255,122,.22);
     animation:spin 50s linear infinite;
     box-shadow:0 0 40px rgba(15,255,122,.08), inset 0 0 40px rgba(15,255,122,.05);
   }
   .t-ring-outer{
-    width:400px;height:400px;
+    width:420px;height:500px;
     border:1.5px dashed rgba(15,255,122,.35);
     animation:spin 35s linear infinite reverse;
     box-shadow:0 0 30px rgba(15,255,122,.12);
   }
   .t-ring-mid{
-    width:290px;height:290px;
+    width:320px;height:400px;
     border:1.5px dotted rgba(15,255,122,.55);
     animation:spin 22s linear infinite;
     box-shadow:0 0 20px rgba(15,255,122,.15);
@@ -434,9 +434,9 @@
   .t-ring-mid::before{top:-4.5px;left:50%;transform:translateX(-50%);}
   .t-ring-mid::after{bottom:-4.5px;left:50%;transform:translateX(-50%);}
 
-  /* ============ AI IMAGE FRAME ============ */
+  /* ============ AI VIDEO FRAME ============ */
   .ai-frame{
-    position:relative;width:340px;height:340px;
+    position:relative;width:380px;height:480px;
     display:grid;place-items:center;
     animation:aiFloat 5s ease-in-out infinite;
   }
@@ -444,8 +444,8 @@
 
   .ai-img-wrap{
     position:relative;
-    width:300px;height:300px;
-    border-radius:50%;
+    width:340px;height:440px;
+    border-radius:28px;
     overflow:hidden;
     border:3px solid var(--green);
     box-shadow:
@@ -529,25 +529,28 @@
     100%{transform:translate(0,0);}
   }
 
-  /* AURAS — multiple layered glows */
+  /* AURAS — multiple layered glows (oval to match taller frame) */
   .ai-aura{position:absolute;border-radius:50%;pointer-events:none;}
   .ai-aura-1{
     inset:-12px;
-    background:radial-gradient(circle, rgba(15,255,122,.4) 30%, transparent 70%);
+    border-radius:32px;
+    background:radial-gradient(ellipse 50% 60% at center, rgba(15,255,122,.4) 30%, transparent 70%);
     filter:blur(20px);opacity:.7;
     animation:auraPulse 2s ease-in-out infinite;
     z-index:1;
   }
   .ai-aura-2{
     inset:-30px;
-    background:radial-gradient(circle, rgba(15,255,122,.25) 30%, transparent 70%);
+    border-radius:40px;
+    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.25) 30%, transparent 70%);
     filter:blur(28px);opacity:.5;
     animation:auraPulse 3s ease-in-out infinite reverse;
     z-index:0;
   }
   .ai-aura-3{
     inset:-50px;
-    background:radial-gradient(circle, rgba(15,255,122,.15) 30%, transparent 70%);
+    border-radius:50px;
+    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.15) 30%, transparent 70%);
     filter:blur(40px);opacity:.4;
     animation:auraPulse 4s ease-in-out infinite;
     z-index:0;
@@ -559,12 +562,12 @@
 
   /* ORBITS — small spheres circling the image */
   .ai-orbit{
-    position:absolute;inset:-20px;border-radius:50%;
+    position:absolute;inset:-20px;border-radius:36px;
     animation:spin 12s linear infinite;
     z-index:4;pointer-events:none;
   }
   .ai-orbit-2{
-    inset:-40px;
+    inset:-40px;border-radius:48px;
     animation:spin 18s linear infinite reverse;
   }
   .ai-orbit .orb{
@@ -926,14 +929,12 @@
     .ring-outer{inset:-60px;}
     .ring-mid{inset:-30px;}
     .q-text{font-size:18px;}
-    .t-scene{width:380px;height:380px;}
-    .t-ring-far{width:380px;height:380px;}
-    .t-ring-outer{width:300px;height:300px;}
-    .t-ring-mid{width:220px;height:220px;}
-    .robot{width:150px;height:220px;}
-    .head{width:120px;height:100px;}
-    .visor{height:45px;}
-    .r-body{width:120px;height:100px;}
+    .t-scene{width:340px;height:480px;}
+    .t-ring-far{width:340px;height:480px;}
+    .t-ring-outer{width:280px;height:380px;}
+    .t-ring-mid{width:210px;height:280px;}
+    .ai-frame{width:280px;height:380px;}
+    .ai-img-wrap{width:260px;height:340px;}
     .thinking-title h1{font-size:22px;letter-spacing:.15em;}
   }
 </style>

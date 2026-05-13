@@ -26,7 +26,9 @@ app.get('/api/health', (req, res) => {
 
 // ============ Static views ============
 const VIEWS_DIR = path.join(__dirname, '..', 'views');
-app.get('/', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'admin.html')));
+// Root → /display (audience-facing). Admin is at /admin (private).
+app.get('/', (req, res) => res.redirect('/display'));
+app.get('/admin', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'admin.html')));
 app.get('/ask', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'ask.html')));
 app.get('/display', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'display.html')));
 
