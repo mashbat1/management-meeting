@@ -469,12 +469,12 @@
   .ai-img{
     width:100%;height:100%;object-fit:cover;
     display:block;
-    animation:aiBreath 4s ease-in-out infinite;
     filter:contrast(1.05) saturate(1.15) brightness(1.05);
+    background:#000;
   }
-  @keyframes aiBreath{
-    0%,100%{transform:scale(1) translateY(0);filter:contrast(1.05) saturate(1.15) brightness(1.05);}
-    50%{transform:scale(1.04) translateY(-2px);filter:contrast(1.1) saturate(1.25) brightness(1.12);}
+  /* Video-specific tweaks */
+  video.ai-img{
+    pointer-events:none;
   }
 
   /* fallback if image is missing */
@@ -616,6 +616,7 @@
   }
   .ai-frame[data-state="decide"] .ai-img{
     animation:aiDecideImg 1.2s ease-out forwards;
+    transform-origin:center center;
   }
   .ai-frame[data-state="decide"] .ai-burst{
     animation:aiBurst 1.4s ease-out;
@@ -1015,7 +1016,17 @@
           <div class="ai-aura ai-aura-3"></div>
 
           <div class="ai-img-wrap">
-            <img src="/ai-thinking.png" class="ai-img" id="aiImg" alt="AI" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
+            <video
+              id="aiVideo"
+              class="ai-img"
+              src="/ai-thinking.mp4"
+              poster="/ai-thinking.png"
+              autoplay
+              loop
+              muted
+              playsinline
+              preload="auto"
+            ></video>
             <div class="ai-fallback" style="display:none">AI</div>
             <div class="ai-scan-h"></div>
             <div class="ai-grid-overlay"></div>
@@ -1125,6 +1136,21 @@
       stopThinkingAnimation();
     }
   }
+
+  // Video error fallback — if MP4 fails to load, show poster image only
+  (function setupVideoFallback(){
+    const video = document.getElementById('aiVideo');
+    if (!video) return;
+    video.addEventListener('error', () => {
+      const img = document.createElement('img');
+      img.src = '/ai-thinking.png';
+      img.className = video.className;
+      img.alt = 'AI';
+      video.parentNode.replaceChild(img, video);
+    });
+    // Try to play (some browsers block autoplay even when muted)
+    video.play().catch(() => {/* autoplay blocked, ignore */});
+  })();
 
   // Build particle elements once
   (function buildParticles(){
