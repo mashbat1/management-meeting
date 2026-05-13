@@ -33,9 +33,14 @@ app.get('/ask', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'ask.html')));
 app.get('/display', (req, res) => res.sendFile(path.join(VIEWS_DIR, 'display.html')));
 
 function publicAskUrl(req) {
+  // Explicit override always wins
   const explicit = process.env.PUBLIC_URL;
   if (explicit) return explicit.replace(/\/$/, '') + '/ask';
-  const host = process.env.VERCEL_URL || req.get('host');
+  // Prefer the actual host the request came in on (main alias like
+  // management-meeting.vercel.app) over VERCEL_URL (which is the per-deployment
+  // preview hostname like management-meeting-p9o4jy6i1-mashbat1s-projects.vercel.app
+  // — that hostname can be subject to Vercel Deployment Protection).
+  const host = req.get('host') || process.env.VERCEL_URL;
   const proto = req.get('x-forwarded-proto') || (host && host.startsWith('localhost') ? 'http' : 'https');
   return `${proto}://${host}/ask`;
 }
