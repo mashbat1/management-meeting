@@ -225,26 +225,38 @@ app.post('/api/select', async (req, res) => {
     meta.topTwo = null;
     await state.setMeta(meta);
 
+    // ALWAYS run AI selection — even for 1 question — so garbage like
+    // "jajajjaj" or "хахаха" gets filtered out instead of being shown verbatim.
     let items;
-    if (roundQuestions.length === 1) {
-      const q = roundQuestions[0];
-      items = [{ ...q, displayQuestion: q.question, reason: 'Зөвхөн нэг асуулт ирсэн тул шууд сонгогдов.' }];
-    } else {
-      const { systemPrompt, userPrompt } = buildPrompts(roundQuestions, currentRound, currentTopic);
-      const { content } = await callOpenRouter({ systemPrompt, userPrompt });
-      console.log('[/api/select] AI raw response:', content.slice(0, 400));
-      try {
-        items = parseSelection(content, roundQuestions);
-      } catch (parseErr) {
-        // Fallback: AI couldn't parse — pick by substance (longer = more likely meaningful)
-        console.error('[/api/select] parseSelection failed, using length-based fallback:', parseErr.message);
-        items = pickFallbackByLength(roundQuestions, 3);
-      }
-      // AI legitimately returned 0 selections — still need to show something on screen
-      if (items.length === 0) {
-        console.log('[/api/select] AI returned empty — using length-based fallback');
-        items = pickFallbackByLength(roundQuestions, 2);
-      }
+    const { systemPrompt, userPrompt } = buildPrompts(roundQuestions, currentRound, currentTopic);
+    const { content } = await callOpenRouter({ systemPrompt, userPrompt });
+    console.log('[/api/select] AI raw response:', content.slice(0, 400));
+    try {
+      items = parseSelection(content, roundQuestions);
+    } catch (parseErr) {
+      // Fallback: AI couldn't parse — pick by substance (longer = more likely meaningful)
+      console.error('[/api/select] parseSelection failed, using length-based fallback:', parseErr.message);
+      items = pickFallbackByLength(roundQuestions, 3);
+    }
+
+    // AI returned [] — try length-based fallback first. If THAT also returns
+    // nothing (i.e. all questions are short / garbage like 'jajajjaj'), don't
+    // pretend we found something — show admin a clear error.
+    if (items.length === 0) {
+      console.log('[/api/select] AI returned empty — trying length-based fallback');
+      items = pickFallbackByLength(roundQuestions, 2);
+    }
+
+    if (items.length === 0) {
+      // Genuinely no substantive question. Clear thinking flag and tell admin.
+      console.log('[/api/select] No substantive questions — refusing to pick');
+      const m = await state.getMeta();
+      m.thinkingUntil = 0;
+      m.topTwo = null;
+      await state.setMeta(m);
+      return res.status(400).json({
+        error: 'Энэ илтгэлд утга агуулсан асуулт алга байна. Бодит асуулт цуглуулаад дахин оролдоно уу.',
+      });
     }
 
     // Re-fetch meta in case other writes happened
