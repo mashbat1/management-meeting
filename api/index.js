@@ -205,7 +205,18 @@ app.post('/api/select', async (req, res) => {
     } else {
       const { systemPrompt, userPrompt } = buildPrompts(roundQuestions, currentRound, currentTopic);
       const { content } = await callOpenRouter({ systemPrompt, userPrompt });
-      items = parseSelection(content, roundQuestions);
+      console.log('[/api/select] AI raw response:', content.slice(0, 400));
+      try {
+        items = parseSelection(content, roundQuestions);
+      } catch (parseErr) {
+        // Fallback: if AI returned unparseable response, just take the first 3 questions verbatim
+        console.error('[/api/select] parseSelection failed:', parseErr.message);
+        items = roundQuestions.slice(0, 3).map((q) => ({
+          ...q,
+          displayQuestion: q.question,
+          reason: 'AI хариу буруу формат байсан тул эхний 3 асуултыг сонгов.',
+        }));
+      }
     }
 
     // Re-fetch meta in case other writes happened
