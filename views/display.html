@@ -39,9 +39,10 @@
       radial-gradient(1px 1px at 90% 60%, #fff 50%, transparent),
       radial-gradient(2px 2px at 30% 10%, var(--green) 50%, transparent);
     background-size:200% 200%;
-    opacity:.4;
-    animation:drift 60s linear infinite;
+    opacity:.35;
+    animation:drift 180s linear infinite;
     z-index:0;
+    will-change:background-position;
   }
   @keyframes drift{from{background-position:0 0;}to{background-position:200% 200%;}}
 
@@ -61,7 +62,7 @@
     background-size:60px 60px;
     transform:perspective(500px) rotateX(60deg);
     transform-origin:bottom;
-    animation:gridscroll 8s linear infinite;
+    animation:gridscroll 20s linear infinite;
     mask-image:linear-gradient(to top, #000 0%, transparent 100%);
     -webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%);
     z-index:1;
@@ -454,16 +455,23 @@
       0 0 100px rgba(15,255,122,.2),
       inset 0 0 30px rgba(15,255,122,.18);
     background:#000;
-    animation:aiBorderPulse 2.4s ease-in-out infinite;
+    box-shadow:0 0 30px var(--green-glow),0 0 60px rgba(15,255,122,.35),inset 0 0 30px rgba(15,255,122,.18);
     z-index:5;
+    will-change:opacity;
+  }
+  /* Border pulse via cheap opacity-based pseudo glow (no expensive box-shadow rewrites) */
+  .ai-img-wrap::after{
+    content:"";
+    position:absolute;inset:-3px;border-radius:30px;
+    border:2px solid var(--green);
+    box-shadow:0 0 22px var(--green);
+    opacity:.4;
+    animation:aiBorderPulse 2.4s ease-in-out infinite;
+    pointer-events:none;
   }
   @keyframes aiBorderPulse{
-    0%,100%{
-      box-shadow:0 0 30px var(--green-glow),0 0 60px rgba(15,255,122,.35),0 0 100px rgba(15,255,122,.2),inset 0 0 30px rgba(15,255,122,.18);
-    }
-    50%{
-      box-shadow:0 0 45px var(--green),0 0 90px rgba(15,255,122,.55),0 0 140px rgba(15,255,122,.35),inset 0 0 40px rgba(15,255,122,.28);
-    }
+    0%,100%{opacity:.35;}
+    50%{opacity:.9;}
   }
 
   .ai-img{
@@ -515,46 +523,27 @@
     mix-blend-mode:screen;
   }
 
-  /* noise/glitch overlay */
-  .ai-noise{
-    position:absolute;inset:0;pointer-events:none;z-index:9;
-    width:100%;height:100%;
-    opacity:.25;mix-blend-mode:screen;
-    animation:noiseShift .2s steps(3) infinite;
-  }
-  @keyframes noiseShift{
-    0%{transform:translate(0,0);}
-    33%{transform:translate(-1px,1px);}
-    66%{transform:translate(1px,-1px);}
-    100%{transform:translate(0,0);}
-  }
+  /* noise/glitch overlay — removed (heavy SVG turbulence caused stuttering) */
+  .ai-noise{display:none;}
 
-  /* AURAS — multiple layered glows (oval to match taller frame) */
-  .ai-aura{position:absolute;border-radius:50%;pointer-events:none;}
+  /* AURAS — lighter (fewer blur layers, GPU-friendly) */
+  .ai-aura{position:absolute;border-radius:32px;pointer-events:none;will-change:opacity;}
   .ai-aura-1{
-    inset:-12px;
-    border-radius:32px;
-    background:radial-gradient(ellipse 50% 60% at center, rgba(15,255,122,.4) 30%, transparent 70%);
-    filter:blur(20px);opacity:.7;
-    animation:auraPulse 2s ease-in-out infinite;
+    inset:-20px;
+    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.35) 30%, transparent 70%);
+    opacity:.7;
+    animation:auraPulse 2.4s ease-in-out infinite;
     z-index:1;
   }
   .ai-aura-2{
-    inset:-30px;
-    border-radius:40px;
-    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.25) 30%, transparent 70%);
-    filter:blur(28px);opacity:.5;
-    animation:auraPulse 3s ease-in-out infinite reverse;
+    inset:-40px;
+    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.2) 30%, transparent 70%);
+    opacity:.5;
+    animation:auraPulse 3.2s ease-in-out infinite reverse;
     z-index:0;
   }
-  .ai-aura-3{
-    inset:-50px;
-    border-radius:50px;
-    background:radial-gradient(ellipse 55% 65% at center, rgba(15,255,122,.15) 30%, transparent 70%);
-    filter:blur(40px);opacity:.4;
-    animation:auraPulse 4s ease-in-out infinite;
-    z-index:0;
-  }
+  /* Removed .ai-aura-3 (excess blur layer) */
+  .ai-aura-3{display:none;}
   @keyframes auraPulse{
     0%,100%{opacity:.4;transform:scale(1);}
     50%{opacity:.85;transform:scale(1.08);}
