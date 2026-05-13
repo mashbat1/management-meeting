@@ -179,6 +179,28 @@ app.post('/api/reset', async (req, res) => {
 // ============ AI select (Top 3) ============
 const MIN_THINKING_MS = 10500; // 10 секундын турш display дээр AI thinking харагдана
 
+// Fallback when AI fails — pick the most substantive questions by length+word count.
+// Garbage like "Хахаха" or "Хүндэтгэе?" naturally falls to the bottom.
+function pickFallbackByLength(roundQuestions, max) {
+  const scored = roundQuestions
+    .map((q) => {
+      const text = String(q.question || '');
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      // Heuristic substance score: words × log(length) — penalize 1-3 word answers
+      const score = words.length >= 4 ? words.length * Math.log(text.length + 1) : 0;
+      return { q, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, max)
+    .map(({ q }) => ({
+      ...q,
+      displayQuestion: q.question,
+      reason: 'AI сонголт хийгээгүй тул хамгийн утга чанартай асуултуудыг сонгов.',
+    }));
+  return scored;
+}
+
 app.post('/api/select', async (req, res) => {
   try {
     if (!process.env.OPENROUTER_API_KEY) {
@@ -209,13 +231,14 @@ app.post('/api/select', async (req, res) => {
       try {
         items = parseSelection(content, roundQuestions);
       } catch (parseErr) {
-        // Fallback: if AI returned unparseable response, just take the first 3 questions verbatim
-        console.error('[/api/select] parseSelection failed:', parseErr.message);
-        items = roundQuestions.slice(0, 3).map((q) => ({
-          ...q,
-          displayQuestion: q.question,
-          reason: 'AI хариу буруу формат байсан тул эхний 3 асуултыг сонгов.',
-        }));
+        // Fallback: AI couldn't parse — pick by substance (longer = more likely meaningful)
+        console.error('[/api/select] parseSelection failed, using length-based fallback:', parseErr.message);
+        items = pickFallbackByLength(roundQuestions, 3);
+      }
+      // AI legitimately returned 0 selections — still need to show something on screen
+      if (items.length === 0) {
+        console.log('[/api/select] AI returned empty — using length-based fallback');
+        items = pickFallbackByLength(roundQuestions, 2);
       }
     }
 
