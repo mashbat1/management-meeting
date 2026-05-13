@@ -19,7 +19,7 @@ app.get('/api/health', (req, res) => {
     ok: hasRedis && hasOpenRouter,
     redis: hasRedis ? 'configured' : 'MISSING — set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN',
     openrouter: hasOpenRouter ? 'configured' : 'MISSING — set OPENROUTER_API_KEY',
-    model: process.env.MODEL || 'google/gemini-2.5-flash',
+    model: process.env.MODEL || 'openai/gpt-4o-mini',
     vercelUrl: process.env.VERCEL_URL || null,
   });
 });
