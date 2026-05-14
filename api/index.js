@@ -100,6 +100,9 @@ app.post('/api/questions', async (req, res) => {
       createdAt: new Date().toISOString(),
     };
     await state.addQuestion(entry);
+    // Audit log: every raw submission is printed to Vercel function logs so
+    // it can be reconstructed if Redis is ever wiped accidentally.
+    console.log(`[Q#${entry.id} round=${entry.round} name="${entry.name}" raw="${rawQuestion.replace(/"/g, '\\"')}" final="${entry.question.replace(/"/g, '\\"')}"]`);
     res.json({ ok: true, id: entry.id, finalQuestion });
   } catch (err) {
     console.error('POST /api/questions error:', err);
