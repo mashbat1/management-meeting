@@ -181,6 +181,52 @@ app.post('/api/reset', async (req, res) => {
   }
 });
 
+// ============ MANUAL select (admin picks IDs themselves) ============
+app.post('/api/select-manual', async (req, res) => {
+  try {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Сонгох асуулт алга байна.' });
+    }
+    if (ids.length > 6) {
+      return res.status(400).json({ error: 'Хамгийн ихдээ 6 асуулт сонгоно.' });
+    }
+    const [questions, meta] = await Promise.all([state.getAllQuestions(), state.getMeta()]);
+    const currentRound = meta.currentRound || 1;
+    const currentTopic = meta.currentTopic || '';
+    const roundQuestions = questions.filter((q) => (q.round || 1) === currentRound);
+
+    // Preserve user-given order
+    const items = ids
+      .map((id) => roundQuestions.find((q) => q.id === Number(id)))
+      .filter(Boolean)
+      .map((q) => ({
+        ...q,
+        displayQuestion: q.question,
+        reason: 'Зохион байгуулагч гар аргаар сонгов.',
+      }));
+
+    if (items.length === 0) {
+      return res.status(400).json({ error: 'Сонгосон асуултын ID олдсонгүй.' });
+    }
+
+    const topTwo = {
+      round: currentRound,
+      topic: currentTopic || null,
+      selectedAt: new Date().toISOString(),
+      manual: true,
+      items,
+    };
+    meta.topTwo = topTwo;
+    meta.thinkingUntil = 0; // skip the AI-thinking animation for manual picks
+    await state.setMeta(meta);
+    res.json({ ok: true, topTwo });
+  } catch (err) {
+    console.error('POST /api/select-manual error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ============ AI select (Top 3) ============
 const MIN_THINKING_MS = 10500; // 10 секундын турш display дээр AI thinking харагдана
 

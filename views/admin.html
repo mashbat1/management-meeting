@@ -401,6 +401,86 @@
     }
     .empty::before{content:"// ";}
 
+    /* Manual pick bar */
+    .manual-pick-bar{
+      display:flex;align-items:center;gap:12px;
+      margin-bottom:12px;padding:10px 12px;
+      background:rgba(15,255,122,.05);
+      border:1px dashed rgba(15,255,122,.3);
+      border-radius:6px;
+      flex-wrap:wrap;
+    }
+    .manual-pick-bar .pick-info{
+      flex:1;min-width:140px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+      color:rgba(15,255,122,.6);
+    }
+    .manual-pick-bar .pick-info b{
+      color:var(--green);font-size:14px;text-shadow:0 0 6px var(--green);
+    }
+    .manual-pick-bar button{
+      padding:8px 14px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+      border:1px solid var(--green);
+      background:linear-gradient(135deg, rgba(15,255,122,.18), rgba(15,255,122,.06));
+      color:var(--green);
+      border-radius:6px;cursor:pointer;
+      transition:all .15s;
+      box-shadow:0 0 10px var(--green-glow);
+      text-shadow:0 0 4px var(--green);
+    }
+    .manual-pick-bar button:hover:not(:disabled){
+      background:linear-gradient(135deg, rgba(15,255,122,.35), rgba(15,255,122,.12));
+      color:#fff;
+      box-shadow:0 0 18px var(--green);
+    }
+    .manual-pick-bar button:disabled{
+      opacity:.4;cursor:not-allowed;
+      border-color:rgba(15,255,122,.2);
+      color:rgba(15,255,122,.4);
+      text-shadow:none;box-shadow:none;
+    }
+    .manual-pick-bar .link-btn{
+      background:transparent;
+      border-color:transparent;
+      box-shadow:none;
+      text-decoration:underline;
+      color:rgba(15,255,122,.5);
+    }
+    .manual-pick-bar .link-btn:hover:not(:disabled){
+      background:transparent;color:var(--green);box-shadow:none;
+    }
+
+    /* q-item checkbox */
+    .q-item{position:relative;cursor:pointer;}
+    .q-item .q-check{
+      position:absolute;top:14px;right:14px;
+      width:18px;height:18px;
+      appearance:none;-webkit-appearance:none;
+      background:#000;
+      border:1.5px solid rgba(15,255,122,.45);
+      border-radius:4px;cursor:pointer;
+      transition:all .15s;
+    }
+    .q-item .q-check:checked{
+      background:var(--green);
+      border-color:var(--green);
+      box-shadow:0 0 8px var(--green);
+    }
+    .q-item .q-check:checked::after{
+      content:"✓";
+      position:absolute;top:-2px;left:3px;
+      color:#000;font-weight:900;font-size:14px;
+    }
+    .q-item.selected{
+      border-color:var(--green);
+      background:rgba(15,255,122,.08);
+      box-shadow:0 0 12px var(--green-glow);
+    }
+    .q-item .text, .q-item .meta{padding-right:30px;}
+
     /* round groups */
     .round-group{margin-bottom:14px;}
     .round-group .head{
@@ -610,6 +690,11 @@
 
           <div class="panel" style="margin-top: 16px;">
             <h2>Цуглуулсан асуултууд</h2>
+            <div class="manual-pick-bar" id="manualPickBar">
+              <span class="pick-info">// Сонгогдсон: <b id="pickCount">0</b></span>
+              <button id="manualShowBtn" disabled>✓ Сонгосноо үзүүлэх</button>
+              <button id="clearPickBtn" class="link-btn" disabled>цэвэрлэх</button>
+            </div>
             <div class="question-list" id="qList">
               <div class="empty">Хараахан асуулт ирээгүй байна. QR кодыг скан хийнэ үү.</div>
             </div>
@@ -699,6 +784,21 @@
     /* ====== State loaders ====== */
     let lastTopTwo = null;
     const collapsedRounds = new Set();
+    const pickedIds = new Set();
+
+    function updatePickBar() {
+      const count = pickedIds.size;
+      document.getElementById('pickCount').textContent = count;
+      const showBtn = document.getElementById('manualShowBtn');
+      const clearBtn = document.getElementById('clearPickBtn');
+      showBtn.disabled = count === 0 || count > 6;
+      clearBtn.disabled = count === 0;
+      showBtn.textContent = count > 6
+        ? `// ✗ ХЭТЭРСЭН (${count})`
+        : count > 0
+          ? `// ✓ СОНГОСНОО ҮЗҮҮЛЭХ (${count})`
+          : '// ✓ СОНГОСНОО ҮЗҮҮЛЭХ';
+    }
 
     async function loadQR() {
       const r = await fetch('/api/qr');
@@ -743,7 +843,13 @@
         const collapsedClass = collapsedRounds.has(round) ? 'collapsed' : '';
         const itemsHtml = items.map((q) => {
           const time = new Date(q.createdAt).toLocaleTimeString('mn-MN');
-          return `<div class="q-item">
+          const isCurrent = round === currentRound;
+          const checked = pickedIds.has(q.id) ? 'checked' : '';
+          const checkboxHtml = isCurrent
+            ? `<input type="checkbox" class="q-check" data-id="${q.id}" ${checked} />`
+            : '';
+          return `<div class="q-item ${pickedIds.has(q.id) ? 'selected' : ''}" data-id="${q.id}">
+            ${checkboxHtml}
             <div class="meta"><span>#${q.id} · ${escapeHtml(q.name)}</span><span>${time}</span></div>
             <div class="text">${escapeHtml(q.question)}</div>
           </div>`;
@@ -882,6 +988,8 @@
         if (j.ok) {
           toast(`Илтгэл #${j.currentRound} эхэллээ`, 'ok');
           collapsedRounds.clear();
+          pickedIds.clear();
+          updatePickBar();
           topicField.value = j.currentTopic || '';
           topicStatus.textContent = j.currentTopic ? '✓ Сэдэв хадгалагдсан' : '(сэдэв тохируулаагүй)';
           topicStatus.classList.toggle('saved', !!j.currentTopic);
@@ -898,6 +1006,58 @@
       }
     }
 
+    /* ====== Manual selection (checkboxes + show button) ====== */
+    document.getElementById('qList').addEventListener('change', (e) => {
+      if (!e.target.classList.contains('q-check')) return;
+      const id = parseInt(e.target.dataset.id, 10);
+      if (e.target.checked) pickedIds.add(id);
+      else pickedIds.delete(id);
+      const item = e.target.closest('.q-item');
+      if (item) item.classList.toggle('selected', e.target.checked);
+      updatePickBar();
+    });
+
+    document.getElementById('manualShowBtn').addEventListener('click', async () => {
+      if (pickedIds.size === 0) return;
+      if (pickedIds.size > 6) {
+        toast('Хамгийн ихдээ 6 асуулт сонгоно', 'err');
+        return;
+      }
+      const btn = document.getElementById('manualShowBtn');
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span>ИЛГЭЭЖ БАЙНА...';
+      try {
+        const r = await fetch('/api/select-manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: [...pickedIds] }),
+        });
+        const j = await r.json();
+        if (j.ok) {
+          toast(`${j.topTwo.items.length} асуулт үзүүлэгдлээ`, 'ok');
+          lastTopTwo = j.topTwo;
+          renderTop2(j.topTwo);
+          showView('Selected');
+        } else {
+          toast(j.error || 'Алдаа гарлаа', 'err');
+        }
+      } catch (err) {
+        toast('Алдаа: ' + err.message, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+        updatePickBar();
+      }
+    });
+
+    document.getElementById('clearPickBtn').addEventListener('click', () => {
+      pickedIds.clear();
+      document.querySelectorAll('.q-check').forEach((c) => { c.checked = false; });
+      document.querySelectorAll('.q-item.selected').forEach((i) => i.classList.remove('selected'));
+      updatePickBar();
+    });
+
     /* ====== Event wiring ====== */
     document.getElementById('openDisplayBtn').addEventListener('click', () => {
       window.open('/display', 'meeting-display', 'width=1280,height=800');
@@ -913,9 +1073,14 @@
       await fetch('/api/reset', { method: 'POST' });
       toast('Цэвэрлэгдлээ', 'ok');
       collapsedRounds.clear();
+      pickedIds.clear();
+      updatePickBar();
       await refreshCollect();
       showView('Collect');
     });
+
+    // Initialize pick bar on load
+    updatePickBar();
 
     /* ====== Manual entry with live transliteration preview ====== */
     const manualQ = document.getElementById('manualQ');
