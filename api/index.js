@@ -232,11 +232,9 @@ app.post('/api/select-manual', async (req, res) => {
     const [questions, meta] = await Promise.all([state.getAllQuestions(), state.getMeta()]);
     const currentRound = meta.currentRound || 1;
     const currentTopic = meta.currentTopic || '';
-    const roundQuestions = questions.filter((q) => (q.round || 1) === currentRound);
-
-    // Preserve user-given order
+    // Search ALL questions across all rounds — admin can hand-pick from any round
     const items = ids
-      .map((id) => roundQuestions.find((q) => q.id === Number(id)))
+      .map((id) => questions.find((q) => q.id === Number(id)))
       .filter(Boolean)
       .map((q) => ({
         ...q,
