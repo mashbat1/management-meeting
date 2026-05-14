@@ -171,11 +171,46 @@ app.post('/api/next-round', async (req, res) => {
   }
 });
 
-// ============ Reset (full wipe) ============
+// ============ Reset (full wipe — auto-archives first) ============
 app.post('/api/reset', async (req, res) => {
   try {
-    await state.resetAll();
-    res.json({ ok: true });
+    const archiveKey = await state.resetAll();
+    res.json({ ok: true, archived: archiveKey });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ Archives — list + view ============
+app.get('/api/archives', async (req, res) => {
+  try {
+    const keys = await state.listArchives();
+    const list = keys.map((key) => ({
+      key,
+      timestamp: key.replace('meeting:archive:', ''),
+    }));
+    res.json({ count: list.length, archives: list });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/archives/:key', async (req, res) => {
+  try {
+    const key = 'meeting:archive:' + req.params.key;
+    const archive = await state.getArchive(key);
+    if (!archive) return res.status(404).json({ error: 'Архив олдсонгүй.' });
+    res.json(archive);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Manual archive without reset (e.g. before a critical meeting)
+app.post('/api/snapshot', async (req, res) => {
+  try {
+    const key = await state.snapshot();
+    res.json({ ok: true, archived: key });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
